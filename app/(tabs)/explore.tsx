@@ -1,112 +1,436 @@
+import type { ComponentProps, ReactNode } from 'react';
 import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { StyleSheet, View, Pressable } from 'react-native';
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
-export default function TabTwoScreen() {
+const briefingSchedule = [
+  {
+    time: '06:30 GMT',
+    title: 'Sunrise Global',
+    lead: 'Tayo Adetola',
+    focus: 'Asia-Pacific overnight markets & emergency alerts',
+  },
+  {
+    time: '09:00 GMT',
+    title: 'Diplomacy Desk',
+    lead: 'Amelia Richter',
+    focus: 'Security council updates and bilateral treaty trackers',
+  },
+  {
+    time: '14:00 GMT',
+    title: 'Movement Monitor',
+    lead: 'Diego Fernández',
+    focus: 'Live protest situation reports and civic response heatmap',
+  },
+];
+
+const documentaryPipeline = [
+  {
+    name: 'Cities After the Storm',
+    stage: 'On-location filming',
+    delivery: 'May 12',
+    lead: 'Documentary Unit · Resilience vertical',
+  },
+  {
+    name: 'Democracy Architects',
+    stage: 'Rough cut review',
+    delivery: 'May 26',
+    lead: 'Investigations · Governance desk',
+  },
+  {
+    name: 'Voices of Tomorrow',
+    stage: 'Pitch session',
+    delivery: 'June 02',
+    lead: 'Originals · Youth culture pod',
+  },
+];
+
+const intelligenceSignals = [
+  {
+    icon: 'map.fill',
+    label: 'Protest pulse',
+    value: '64',
+    delta: '+6',
+    detail: 'Global movement momentum rising with strong civic organisation in 12 capitals.',
+  },
+  {
+    icon: 'shield.checkered',
+    label: 'Governance stability',
+    value: '78',
+    delta: '+3',
+    detail: 'Legislative transparency scores improved in Canada, Kenya, and Portugal.',
+  },
+  {
+    icon: 'sun.max.fill',
+    label: 'Constructive headlines',
+    value: '41',
+    delta: '+9',
+    detail: 'Positive-impact stories trending: renewable energy, climate adaptation, civic tech.',
+  },
+];
+
+const resourceHub = [
+  {
+    title: 'Field guide: Covering demonstrations with care',
+    description: 'Updated legal briefings, rapid deployment safety checklists, and encrypted contact trees.',
+    action: 'Open protest protocols',
+  },
+  {
+    title: 'Documentary stylebook 2025',
+    description: 'Color grading LUTs, interview frameworks, and soundtrack licensing templates.',
+    action: 'Review filmmakers kit',
+  },
+  {
+    title: 'Editorial standards and ethics',
+    description: 'Governance, verification workflows, and AI-aided fact-checking policies.',
+    action: 'Read compliance charter',
+  },
+];
+
+export default function ExploreScreen() {
+  const colorScheme = useColorScheme();
+  const palette = Colors[colorScheme ?? 'light'];
+  const borderSubtle = colorScheme === 'dark' ? 'rgba(148, 163, 184, 0.25)' : '#e2e8f0';
+  const cardSurface = colorScheme === 'dark' ? 'rgba(15, 23, 42, 0.65)' : '#ffffff';
+  const signalSurface = colorScheme === 'dark' ? 'rgba(148, 163, 184, 0.08)' : 'rgba(10, 126, 164, 0.08)';
+  const tint = palette.tint;
+
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
+      headerBackgroundColor={{ light: '#1e293b', dark: '#020617' }}
       headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
+        <Image
+          source={{
+            uri: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1600&q=80',
+          }}
           style={styles.headerImage}
         />
       }>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
+        <ThemedText type="title" style={styles.title}>
+          Newsroom Control Center
+        </ThemedText>
+        <ThemedText style={styles.subtitle}>
+          Coordinate coverage, accelerate investigations, and align every desk around the biggest stories on the planet.
         </ThemedText>
       </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
+
+      <SectionBlock
+        title="Live briefing schedule"
+        caption="Join editorial stand-ups across regions"
+        icon="clock.fill"
+        surface={cardSurface}
+        borderColor={borderSubtle}
+        tint={tint}
+      >
+        {briefingSchedule.map((entry) => (
+          <View key={entry.title} style={styles.briefingRow}>
+            <View style={styles.briefingTime}>
+              <ThemedText type="subtitle" style={styles.briefingTimeText}>
+                {entry.time}
+              </ThemedText>
+            </View>
+            <View style={styles.briefingDetails}>
+              <ThemedText type="subtitle" style={styles.briefingTitle}>
+                {entry.title}
+              </ThemedText>
+              <ThemedText style={styles.briefingLead}>{entry.lead}</ThemedText>
+              <ThemedText style={styles.briefingFocus}>{entry.focus}</ThemedText>
+            </View>
+          </View>
+        ))}
+      </SectionBlock>
+
+      <SectionBlock
+        title="Documentary production slate"
+        caption="Status of flagship investigative films"
+        icon="film.stack"
+        surface={cardSurface}
+        borderColor={borderSubtle}
+        tint={tint}
+      >
+        {documentaryPipeline.map((doc) => (
+          <View key={doc.name} style={styles.pipelineRow}>
+            <View style={[styles.pipelineBullet, { backgroundColor: signalSurface }]}>
+              <IconSymbol name="sparkles" size={16} color={tint} />
+            </View>
+            <View style={styles.pipelineContent}>
+              <ThemedText type="subtitle" style={styles.pipelineTitle}>
+                {doc.name}
+              </ThemedText>
+              <ThemedText style={styles.pipelineMeta}>
+                {doc.stage} · Delivery {doc.delivery}
+              </ThemedText>
+              <ThemedText style={styles.pipelineLead}>{doc.lead}</ThemedText>
+            </View>
+          </View>
+        ))}
+      </SectionBlock>
+
+      <SectionBlock
+        title="Intelligence signals"
+        caption="Realtime dashboards powering the Global Dispatch"
+        icon="waveform.path.ecg"
+        surface={cardSurface}
+        borderColor={borderSubtle}
+        tint={tint}
+      >
+        {intelligenceSignals.map((signal) => (
+          <View key={signal.label} style={[styles.signalCard, { borderColor: borderSubtle }]}>
+            <View style={[styles.signalIconWrap, { backgroundColor: signalSurface }]}> 
+              <IconSymbol name={signal.icon as ComponentProps<typeof IconSymbol>['name']} size={24} color={tint} />
+            </View>
+            <View style={styles.signalContent}>
+              <View style={styles.signalHeader}>
+                <ThemedText type="subtitle" style={styles.signalLabel}>
+                  {signal.label}
+                </ThemedText>
+                <View style={styles.signalValueWrap}>
+                  <ThemedText type="title" style={styles.signalValue}>
+                    {signal.value}
+                  </ThemedText>
+                  <ThemedText style={[styles.signalDelta, { color: tint }]}>{signal.delta}</ThemedText>
+                </View>
+              </View>
+              <ThemedText style={styles.signalDetail}>{signal.detail}</ThemedText>
+            </View>
+          </View>
+        ))}
+      </SectionBlock>
+
+      <SectionBlock
+        title="Resource hub"
+        caption="Best-practice playbooks from every bureau"
+        icon="books.vertical.fill"
+        surface={cardSurface}
+        borderColor={borderSubtle}
+        tint={tint}
+      >
+        {resourceHub.map((resource) => (
+          <Pressable key={resource.title} style={[styles.resourceCard, { borderColor: borderSubtle }]}>
+            <View style={styles.resourceContent}>
+              <ThemedText type="subtitle" style={styles.resourceTitle}>
+                {resource.title}
+              </ThemedText>
+              <ThemedText style={styles.resourceDescription}>{resource.description}</ThemedText>
+            </View>
+            <View style={styles.resourceAction}>
+              <ThemedText type="defaultSemiBold" style={{ color: tint }}>
+                {resource.action}
+              </ThemedText>
+              <IconSymbol name="arrow.up.right" size={16} color={tint} />
+            </View>
+          </Pressable>
+        ))}
+      </SectionBlock>
     </ParallaxScrollView>
+  );
+}
+
+function SectionBlock({
+  title,
+  caption,
+  icon,
+  surface,
+  borderColor,
+  tint,
+  children,
+}: {
+  title: string;
+  caption: string;
+  icon: ComponentProps<typeof IconSymbol>['name'];
+  surface: string;
+  borderColor: string;
+  tint: string;
+  children: ReactNode;
+}) {
+  return (
+    <ThemedView style={[styles.section, { borderColor }]} lightColor={surface} darkColor={surface}>
+      <View style={styles.sectionHeader}>
+        <View style={styles.sectionTitleRow}>
+          <IconSymbol name={icon} size={22} color={tint} />
+          <ThemedText type="subtitle" style={styles.sectionTitle}>
+            {title}
+          </ThemedText>
+        </View>
+        <ThemedText style={styles.sectionCaption}>{caption}</ThemedText>
+      </View>
+      {children}
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+    width: '100%',
+    height: 240,
   },
   titleContainer: {
+    gap: 12,
+    paddingTop: 28,
+    paddingBottom: 12,
+  },
+  title: {
+    fontSize: 30,
+    lineHeight: 34,
+  },
+  subtitle: {
+    fontSize: 16,
+    lineHeight: 22,
+    opacity: 0.85,
+  },
+  section: {
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1,
+    gap: 16,
+    marginTop: 24,
+  },
+  sectionHeader: {
+    gap: 6,
+  },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  sectionTitle: {
+    fontSize: 20,
+  },
+  sectionCaption: {
+    opacity: 0.7,
+  },
+  briefingRow: {
+    flexDirection: 'row',
+    gap: 16,
+    alignItems: 'flex-start',
+  },
+  briefingTime: {
+    width: 88,
+    paddingVertical: 10,
+  },
+  briefingTimeText: {
+    fontSize: 16,
+  },
+  briefingDetails: {
+    flex: 1,
+    gap: 4,
+  },
+  briefingTitle: {
+    fontSize: 18,
+  },
+  briefingLead: {
+    fontSize: 14,
+    opacity: 0.75,
+  },
+  briefingFocus: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  pipelineRow: {
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'flex-start',
+  },
+  pipelineBullet: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(10, 126, 164, 0.15)',
+  },
+  pipelineContent: {
+    flex: 1,
+    gap: 4,
+  },
+  pipelineTitle: {
+    fontSize: 17,
+  },
+  pipelineMeta: {
+    fontSize: 13,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    opacity: 0.7,
+  },
+  pipelineLead: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  signalCard: {
+    flexDirection: 'row',
+    gap: 16,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  signalIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  signalContent: {
+    flex: 1,
+    gap: 6,
+  },
+  signalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+  },
+  signalLabel: {
+    fontSize: 18,
+  },
+  signalValueWrap: {
     flexDirection: 'row',
     gap: 8,
+    alignItems: 'baseline',
+  },
+  signalValue: {
+    fontSize: 26,
+    lineHeight: 30,
+  },
+  signalDelta: {
+    fontSize: 14,
+  },
+  signalDetail: {
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  resourceCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    padding: 16,
+    gap: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  resourceContent: {
+    flex: 1,
+    gap: 6,
+  },
+  resourceTitle: {
+    fontSize: 17,
+  },
+  resourceDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+    opacity: 0.85,
+  },
+  resourceAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
 });
