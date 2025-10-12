@@ -1,11 +1,19 @@
 import type { ComponentProps } from 'react';
+import { useCallback } from 'react';
 import { Image } from 'expo-image';
+import * as WebBrowser from 'expo-web-browser';
 import { StyleSheet, View, Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
 
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import {
+  documentarySpotlight,
+  governanceSpotlight,
+  protestWatchHighlights,
+} from '@/constants/content';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -15,52 +23,31 @@ const heroMetrics = [
   { label: 'Investigations running', value: '18' },
 ];
 
-const documentaries = [
+const quickActions = [
   {
-    title: 'Frontline Planet',
-    duration: '54 min · Documentary',
-    summary: 'Inside the coastal cities building resilient sea defenses before the next superstorm.',
-    image:
-      'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1400&q=80',
+    title: 'Documentaries',
+    subtitle: 'Field films & trailers',
+    icon: 'film.fill',
+    route: '/documentaries',
   },
   {
-    title: 'The Archive of Voices',
-    duration: '42 min · Docuseries',
-    summary: 'Meet the historians digitising protest chants, oral histories, and underground radio.',
-    image:
-      'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1400&q=80',
-  },
-];
-
-const protestWatch = [
-  {
-    region: 'Santiago, Chile',
-    movement: 'Education Equity Coalition',
-    status: 'Peaceful sit-ins ongoing',
-    update: 'Government to host national dialogue on tuition reform this Friday.',
-    severity: 0.62,
+    title: 'Current News',
+    subtitle: 'Rolling solution headlines',
+    icon: 'newspaper.fill',
+    route: '/news',
   },
   {
-    region: 'Warsaw, Poland',
-    movement: 'Future of Media Alliance',
-    status: 'Journalist march planned',
-    update: 'Independent press clubs request EU mediation on new licensing bill.',
-    severity: 0.48,
+    title: 'Governance Index',
+    subtitle: '195-nation scoreboard',
+    icon: 'chart.bar.xaxis',
+    route: '/governance-index',
   },
   {
-    region: 'Lagos, Nigeria',
-    movement: 'Blue Air Coalition',
-    status: 'Evening demonstrations',
-    update: 'City pledges transparent pollution data release before weekend.',
-    severity: 0.71,
+    title: 'Protest Watch',
+    subtitle: 'Movement dossiers',
+    icon: 'megaphone.fill',
+    route: '/protests',
   },
-];
-
-const governanceIndex = [
-  { country: 'New Zealand', score: 89, change: +3 },
-  { country: 'Finland', score: 92, change: +2 },
-  { country: 'Canada', score: 84, change: +1 },
-  { country: 'Costa Rica', score: 81, change: 0 },
 ];
 
 const forwardFocus = [
@@ -97,6 +84,11 @@ export default function HomeScreen() {
   const forwardSurface = colorScheme === 'dark' ? 'rgba(148, 163, 184, 0.1)' : '#fdfdfd';
   const tintedSurface = colorScheme === 'dark' ? 'rgba(148, 163, 184, 0.25)' : 'rgba(10, 126, 164, 0.12)';
   const heroBadgeForeground = colorScheme === 'dark' ? '#f8fafc' : palette.background;
+  const router = useRouter();
+
+  const handleOpenDocumentary = useCallback(async (url: string) => {
+    await WebBrowser.openBrowserAsync(url);
+  }, []);
 
   return (
     <ParallaxScrollView
@@ -138,9 +130,35 @@ export default function HomeScreen() {
         </View>
       </ThemedView>
 
+      <SectionHeader title="Quick launch" caption="Jump straight to live dashboards" icon="sparkles" />
+      <View style={styles.quickGrid}>
+        {quickActions.map((action) => (
+          <Pressable
+            key={action.title}
+            onPress={() => router.push(action.route)}
+            style={[styles.quickCard, { borderColor: borderSubtle, backgroundColor: highlightSurface }]}
+          >
+            <View style={[styles.quickIconWrap, { backgroundColor: tintedSurface }]}> 
+              <IconSymbol name={action.icon as ComponentProps<typeof IconSymbol>['name']} size={22} color={palette.tint} />
+            </View>
+            <View style={styles.quickContent}>
+              <ThemedText type="subtitle" style={styles.quickTitle}>
+                {action.title}
+              </ThemedText>
+              <ThemedText style={styles.quickSubtitle}>{action.subtitle}</ThemedText>
+            </View>
+            <IconSymbol name="arrow.right" size={18} color={palette.tint} />
+          </Pressable>
+        ))}
+      </View>
+
       <SectionHeader title="Documentaries" caption="Immersive stories from the field" icon="film.fill" />
-      {documentaries.map((feature) => (
-        <Pressable key={feature.title} style={[styles.featureCard, { backgroundColor: featureSurface }]}>
+      {documentarySpotlight.map((feature) => (
+        <Pressable
+          key={feature.slug}
+          onPress={() => handleOpenDocumentary(feature.url)}
+          style={[styles.featureCard, { backgroundColor: featureSurface }]}
+        >
           <Image source={{ uri: feature.image }} style={styles.featureImage} contentFit="cover" />
           <View style={styles.featureContent}>
             <ThemedText type="subtitle" style={styles.featureTitle}>
@@ -164,8 +182,12 @@ export default function HomeScreen() {
         lightColor={panelSurface}
         darkColor={panelSurface}
       >
-        {protestWatch.map((protest) => (
-          <View key={protest.region} style={styles.protestRow}>
+        {protestWatchHighlights.map((protest) => (
+          <Pressable
+            key={protest.slug}
+            onPress={() => router.push('/protests')}
+            style={styles.protestRow}
+          >
             <View style={styles.protestHeader}>
               <ThemedText type="subtitle" style={styles.protestRegion}>
                 {protest.region}
@@ -178,7 +200,7 @@ export default function HomeScreen() {
             <ThemedText style={styles.protestMovement}>{protest.movement}</ThemedText>
             <ThemedText style={styles.protestUpdate}>{protest.update}</ThemedText>
             <ProgressBar value={protest.severity * 100} tint={palette.tint} />
-          </View>
+          </Pressable>
         ))}
       </ThemedView>
 
@@ -188,8 +210,12 @@ export default function HomeScreen() {
         lightColor={panelSurface}
         darkColor={panelSurface}
       >
-        {governanceIndex.map((entry) => (
-          <View key={entry.country} style={styles.indexRow}>
+        {governanceSpotlight.map((entry) => (
+          <Pressable
+            key={entry.country}
+            onPress={() => router.push('/governance-index')}
+            style={styles.indexRow}
+          >
             <View style={styles.indexHeader}>
               <ThemedText type="subtitle" style={styles.indexCountry}>
                 {entry.country}
@@ -205,7 +231,7 @@ export default function HomeScreen() {
             <ThemedText style={styles.indexDelta}>
               {entry.change > 0 ? `▲ ${entry.change} this week` : entry.change < 0 ? `▼ ${Math.abs(entry.change)} this week` : 'Unchanged'}
             </ThemedText>
-          </View>
+          </Pressable>
         ))}
       </ThemedView>
 
@@ -329,6 +355,36 @@ const styles = StyleSheet.create({
   },
   sectionCaption: {
     opacity: 0.7,
+  },
+  quickGrid: {
+    flexDirection: 'column',
+    gap: 12,
+  },
+  quickCard: {
+    borderWidth: 1,
+    borderRadius: 18,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  quickIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quickContent: {
+    flex: 1,
+    gap: 2,
+  },
+  quickTitle: {
+    fontSize: 17,
+  },
+  quickSubtitle: {
+    fontSize: 13,
+    opacity: 0.75,
   },
   featureCard: {
     borderRadius: 20,
