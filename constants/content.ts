@@ -45,7 +45,7 @@ export const documentaryLibrary: Documentary[] = [
       'A high-altitude expedition follows Nepali glaciologists as they race to protect Himalayan communities from the threat of outburst floods.',
     image:
       'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1600&q=80',
-    url: 'https://www.youtube.com/watch?v=1m3G6hQvY6c',
+    url: 'https://youtu.be/OlIFXpCQH6w?si=u27T1SF-G82eckdA',
     tags: ['climate', 'himalayas', 'water security'],
   },
   {
@@ -56,7 +56,7 @@ export const documentaryLibrary: Documentary[] = [
       'Indigenous forest rangers across Brazil and Peru deploy open-source tools to document illegal logging in real time.',
     image:
       'https://images.unsplash.com/photo-1509098681029-b45e9c845022?auto=format&fit=crop&w=1600&q=80',
-    url: 'https://www.youtube.com/watch?v=X1eK5RK5Sg8',
+    url: 'https://youtu.be/GjkKi6uXxYw?si=KypUI2UntCbJP4HW',
     tags: ['biodiversity', 'indigenous leadership'],
   },
   {
@@ -67,7 +67,7 @@ export const documentaryLibrary: Documentary[] = [
       'As cyclones intensify, community engineers in Bangladesh design amphibious schools and clinics to keep learning alive.',
     image:
       'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80',
-    url: 'https://www.youtube.com/watch?v=1WmNXEVia8I',
+    url: 'https://youtu.be/fZcYLBzG7FM?si=ypMJfv6rYH0tziNO',
     tags: ['resilience', 'education'],
   },
   {
@@ -78,7 +78,7 @@ export const documentaryLibrary: Documentary[] = [
       'Marine biologists from Senegal to Portugal collaborate on an acoustic map that reveals the health of the Atlantic Ocean.',
     image:
       'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80',
-    url: 'https://www.youtube.com/watch?v=VQmWpCj9zNE',
+    url: 'https://youtu.be/n_LwI2OQHh8?si=nbSvPtyTB6yZqVuK',
     tags: ['oceans', 'science'],
   },
   {
@@ -89,7 +89,7 @@ export const documentaryLibrary: Documentary[] = [
       'A portrait of the organisers turning Lagos night markets into hubs for clean energy and safe commutes.',
     image:
       'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1600&q=80',
-    url: 'https://www.youtube.com/watch?v=uO4-9lYX_8w',
+    url: 'https://youtu.be/OboT09uRw6M?si=aHibvvgTcFHT_c9G',
     tags: ['urban innovation', 'energy'],
   },
 ];
