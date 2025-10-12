@@ -13,8 +13,13 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 2. Start the app
 
    ```bash
-   npx expo start
+   npm start
    ```
+
+   The start script automatically retries Expo in `--offline` mode if the CLI
+   cannot reach Expo's servers (which is common in restricted CI sandboxes).
+   Pass `--no-offline-fallback` if you want the command to fail instead of
+   retrying, or `--offline` / `--online` to explicitly choose a mode.
 
 In the output, you'll find options to open the app in a
 
