@@ -1,12 +1,13 @@
 import type { ComponentProps, ReactNode } from 'react';
 import { Image } from 'expo-image';
-import { StyleSheet, View, Pressable } from 'react-native';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
+import { useAuth } from '@/contexts/auth-context';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 const briefingSchedule = [
@@ -100,6 +101,22 @@ export default function ExploreScreen() {
   const cardSurface = colorScheme === 'dark' ? 'rgba(15, 23, 42, 0.65)' : '#ffffff';
   const signalSurface = colorScheme === 'dark' ? 'rgba(148, 163, 184, 0.08)' : 'rgba(10, 126, 164, 0.08)';
   const tint = palette.tint;
+  const accentSurface = colorScheme === 'dark' ? 'rgba(14, 116, 144, 0.28)' : 'rgba(14, 165, 233, 0.14)';
+  const accentText = colorScheme === 'dark' ? '#e2e8f0' : '#0f172a';
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = () => {
+    Alert.alert('Sign out', 'Are you sure you want to leave the Global Dispatch?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Sign out',
+        style: 'destructive',
+        onPress: () => {
+          void signOut();
+        },
+      },
+    ]);
+  };
 
   return (
     <ParallaxScrollView
@@ -119,6 +136,32 @@ export default function ExploreScreen() {
         <ThemedText style={styles.subtitle}>
           Coordinate coverage, accelerate investigations, and align every desk around the biggest stories on the planet.
         </ThemedText>
+      </ThemedView>
+
+      <ThemedView
+        style={[styles.accountCard, { borderColor: borderSubtle }]}
+        lightColor={cardSurface}
+        darkColor={cardSurface}
+      >
+        <View style={styles.accountHeader}>
+          <View style={[styles.accountAvatar, { backgroundColor: accentSurface }]}>
+            <ThemedText style={[styles.accountAvatarText, { color: accentText }]}> 
+              {(user?.name || user?.email || 'Guest').charAt(0).toUpperCase()}
+            </ThemedText>
+          </View>
+          <View style={styles.accountMeta}>
+            <ThemedText type="subtitle" style={styles.accountGreeting}>
+              Hey {user?.name?.split(' ')[0] ?? 'there'}
+            </ThemedText>
+            <ThemedText style={styles.accountCopy}>
+              Your dashboards refresh every 15 minutes. Stay signed in to keep your alert routing active.
+            </ThemedText>
+          </View>
+        </View>
+        <Pressable onPress={handleSignOut} style={[styles.accountButton, { backgroundColor: accentSurface }]}> 
+          <IconSymbol name="arrow.uturn.backward" size={18} color={accentText} />
+          <ThemedText style={[styles.accountButtonText, { color: accentText }]}>Sign out</ThemedText>
+        </Pressable>
       </ThemedView>
 
       <SectionBlock
@@ -284,6 +327,54 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
     opacity: 0.85,
+  },
+  accountCard: {
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 20,
+    gap: 16,
+    marginTop: 16,
+  },
+  accountHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  accountAvatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  accountAvatarText: {
+    fontSize: 22,
+    fontWeight: '700',
+  },
+  accountMeta: {
+    flex: 1,
+    gap: 4,
+  },
+  accountGreeting: {
+    fontSize: 18,
+  },
+  accountCopy: {
+    fontSize: 14,
+    lineHeight: 20,
+    opacity: 0.8,
+  },
+  accountButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 14,
+  },
+  accountButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
   },
   section: {
     borderRadius: 20,
