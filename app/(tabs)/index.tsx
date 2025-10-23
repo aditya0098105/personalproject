@@ -1,9 +1,10 @@
 import type { ComponentProps } from 'react';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { Image } from 'expo-image';
 import * as WebBrowser from 'expo-web-browser';
-import { StyleSheet, View, Pressable } from 'react-native';
+import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
@@ -48,6 +49,12 @@ const quickActions = [
     icon: 'megaphone.fill',
     route: '/protests',
   },
+  {
+    title: 'Expose',
+    subtitle: 'Accountability spotlight',
+    icon: 'exclamationmark.triangle.fill',
+    route: '/(tabs)/expose',
+  },
 ];
 
 const forwardFocus = [
@@ -85,10 +92,35 @@ export default function HomeScreen() {
   const tintedSurface = colorScheme === 'dark' ? 'rgba(148, 163, 184, 0.25)' : 'rgba(10, 126, 164, 0.12)';
   const heroBadgeForeground = colorScheme === 'dark' ? '#f8fafc' : palette.background;
   const router = useRouter();
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterStatus, setNewsletterStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const handleOpenDocumentary = useCallback(async (url: string) => {
     await WebBrowser.openBrowserAsync(url);
   }, []);
+
+  const handleSubmitNewsletter = useCallback(() => {
+    const trimmed = newsletterEmail.trim();
+
+    if (!trimmed) {
+      setNewsletterStatus({ type: 'error', message: 'Please enter an email address to continue.' });
+      return;
+    }
+
+    const emailPattern = /[^\s@]+@[^\s@]+\.[^\s@]+/;
+
+    if (!emailPattern.test(trimmed)) {
+      setNewsletterStatus({ type: 'error', message: 'That email doesn’t look quite right. Try again?' });
+      return;
+    }
+
+    setNewsletterEmail('');
+    setNewsletterStatus({
+      type: 'success',
+      message: 'Thanks! Your weekend intelligence briefing will land in your inbox.',
+    });
+    Alert.alert('You’re on the list', 'We’ll deliver our next Global Dispatch digest straight to you.');
+  }, [newsletterEmail]);
 
   return (
     <ParallaxScrollView
@@ -253,6 +285,64 @@ export default function HomeScreen() {
           </View>
         ))}
       </ThemedView>
+
+      <LinearGradient
+        colors={
+          colorScheme === 'dark'
+            ? ['#0f172a', '#0b2942']
+            : ['#0ea5e9', '#0369a1']
+        }
+        style={styles.newsletterCard}
+      >
+        <View style={styles.newsletterHeader}>
+          <View style={styles.newsletterIconWrap}>
+            <IconSymbol name="envelope.open.fill" size={22} color="#0f172a" />
+          </View>
+          <View style={styles.newsletterTextBlock}>
+            <ThemedText type="subtitle" style={styles.newsletterTitle} lightColor="#ffffff" darkColor="#ffffff">
+              Get the weekend insider brief
+            </ThemedText>
+            <ThemedText style={styles.newsletterSubtitle} lightColor="rgba(255,255,255,0.85)" darkColor="rgba(255,255,255,0.85)">
+              Receive curated investigations, accountability spotlights, and dispatch intel in your inbox.
+            </ThemedText>
+          </View>
+        </View>
+        <View style={styles.newsletterForm}>
+          <TextInput
+            value={newsletterEmail}
+            onChangeText={(value) => {
+              setNewsletterEmail(value);
+              if (newsletterStatus) {
+                setNewsletterStatus(null);
+              }
+            }}
+            placeholder="you@example.com"
+            placeholderTextColor="rgba(255,255,255,0.6)"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoComplete="email"
+            style={styles.newsletterInput}
+          />
+          <Pressable
+            accessibilityRole="button"
+            onPress={handleSubmitNewsletter}
+            style={styles.newsletterButton}
+          >
+            <ThemedText type="defaultSemiBold" style={styles.newsletterButtonText} lightColor="#0f172a" darkColor="#0f172a">
+              Submit
+            </ThemedText>
+          </Pressable>
+        </View>
+        {newsletterStatus ? (
+          <ThemedText
+            style={styles.newsletterStatus}
+            lightColor={newsletterStatus.type === 'success' ? '#e2f7ff' : '#facc15'}
+            darkColor={newsletterStatus.type === 'success' ? '#e2f7ff' : '#fde68a'}
+          >
+            {newsletterStatus.message}
+          </ThemedText>
+        ) : null}
+      </LinearGradient>
     </ParallaxScrollView>
   );
 }
@@ -516,5 +606,66 @@ const styles = StyleSheet.create({
   forwardSummary: {
     fontSize: 15,
     lineHeight: 22,
+  },
+  newsletterCard: {
+    marginTop: 32,
+    borderRadius: 26,
+    padding: 24,
+    gap: 18,
+    overflow: 'hidden',
+  },
+  newsletterHeader: {
+    flexDirection: 'row',
+    gap: 16,
+    alignItems: 'center',
+  },
+  newsletterIconWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  newsletterTextBlock: {
+    flex: 1,
+    gap: 6,
+  },
+  newsletterTitle: {
+    color: '#ffffff',
+    fontSize: 22,
+  },
+  newsletterSubtitle: {
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  newsletterForm: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  newsletterInput: {
+    flex: 1,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    color: '#ffffff',
+    fontSize: 16,
+  },
+  newsletterButton: {
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 22,
+    paddingVertical: 14,
+    borderRadius: 16,
+  },
+  newsletterButtonText: {
+    color: '#0f172a',
+    fontSize: 16,
+  },
+  newsletterStatus: {
+    fontSize: 14,
+    opacity: 0.9,
   },
 });
