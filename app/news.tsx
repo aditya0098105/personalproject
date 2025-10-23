@@ -13,6 +13,7 @@ import {
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { FALLBACK_ARTICLES } from '@/constants/news-fallback';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -25,8 +26,7 @@ type Article = {
   };
 };
 
-const NEWS_ENDPOINT =
-  'https://newsapi.org/v2/top-headlines?country=in&apiKey=74b7470ec5f24a8fa53345cf782bc0cc';
+const NEWS_ENDPOINT = 'https://saurav.tech/NewsAPI/top-headlines/category/general/in.json';
 
 export default function NewsroomFeedScreen() {
   const colorScheme = useColorScheme();
@@ -37,6 +37,7 @@ export default function NewsroomFeedScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [usingFallback, setUsingFallback] = useState(false);
 
   const cardSurface = isDark ? 'rgba(15, 23, 42, 0.75)' : '#ffffff';
   const borderSubtle = isDark ? 'rgba(148, 163, 184, 0.24)' : '#e2e8f0';
@@ -46,34 +47,77 @@ export default function NewsroomFeedScreen() {
     [],
   );
 
+  const parseArticles = useCallback((payload: unknown): Article[] => {
+    if (payload && typeof payload === 'object') {
+      if ('articles' in payload && Array.isArray((payload as { articles: unknown }).articles)) {
+        return (payload as { articles: any[] }).articles
+          .map((item) => ({
+            title: typeof item?.title === 'string' ? item.title : 'Untitled',
+            url: typeof item?.url === 'string' ? item.url : '',
+            urlToImage: typeof item?.urlToImage === 'string' ? item.urlToImage : null,
+            source: {
+              name:
+                typeof item?.source?.name === 'string' && item.source.name.trim().length > 0
+                  ? item.source.name
+                  : 'Unknown source',
+            },
+          }))
+          .filter((item) => item.url);
+      }
+
+      if ('data' in payload && Array.isArray((payload as { data: any[] }).data)) {
+        return (payload as { data: any[] }).data
+          .map((item) => ({
+            title: item.title ?? item.content ?? 'Untitled',
+            url: item.readMoreUrl ?? item.url ?? '',
+            urlToImage: item.imageUrl ?? null,
+            source: {
+              name: item.author ?? 'Inshorts',
+            },
+          }))
+          .filter((item) => item.url);
+      }
+    }
+
+    return [];
+  }, []);
+
   const fetchArticles = useCallback(async (isRefresh = false) => {
     try {
       setError(null);
+      setUsingFallback(false);
       if (isRefresh) {
         setRefreshing(true);
       } else {
         setLoading(true);
       }
 
-      const response = await fetch(NEWS_ENDPOINT);
+      const response = await fetch(NEWS_ENDPOINT, {
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      });
       if (!response.ok) {
-        throw new Error('Unable to reach NewsAPI.');
+        throw new Error('Unable to reach the headlines service.');
       }
 
       const payload = await response.json();
-      if (payload.status !== 'ok') {
-        throw new Error(payload.message ?? 'Unexpected response from NewsAPI.');
+      const normalized = parseArticles(payload);
+      if (!normalized.length) {
+        throw new Error('No articles available right now.');
       }
 
-      setArticles(payload.articles ?? []);
+      setArticles(normalized);
     } catch (fetchError) {
       console.error(fetchError);
       setError(fetchError instanceof Error ? fetchError.message : 'Something went wrong.');
+      setArticles([...FALLBACK_ARTICLES]);
+      setUsingFallback(true);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [parseArticles]);
 
   useEffect(() => {
     fetchArticles(false);
@@ -129,10 +173,14 @@ export default function NewsroomFeedScreen() {
   const listFooter = useMemo(
     () => (
       <View style={styles.footer}>
-        <ThemedText style={styles.footerText}>Powered by NewsAPI.org</ThemedText>
+        <ThemedText style={styles.footerText}>
+          {usingFallback
+            ? 'Showing cached headlines while we reconnect to live sources.'
+            : 'Powered by NewsAPI.org'}
+        </ThemedText>
       </View>
     ),
-    [],
+    [usingFallback],
   );
 
   if (loading && !refreshing && articles.length === 0) {
@@ -177,11 +225,18 @@ export default function NewsroomFeedScreen() {
         }
         showsVerticalScrollIndicator={false}
       />
-      {error && (
+      {(error || usingFallback) && (
         <View style={[styles.inlineError, { borderColor: palette.tint }]}>
           <ThemedText style={styles.inlineErrorText}>
-            {error}
+            {usingFallback
+              ? 'We are showing a cached collection of headlines until the live feed is back online.'
+              : error}
           </ThemedText>
+          {usingFallback && error && (
+            <ThemedText style={[styles.inlineErrorText, styles.inlineErrorSubtle]}>
+              {error}
+            </ThemedText>
+          )}
           <Pressable onPress={() => fetchArticles(false)} style={styles.inlineRetry}>
             <ThemedText style={[styles.inlineRetryText, { color: palette.tint }]}>Retry</ThemedText>
           </Pressable>
@@ -284,6 +339,9 @@ const styles = StyleSheet.create({
   inlineErrorText: {
     fontSize: 14,
     lineHeight: 20,
+  },
+  inlineErrorSubtle: {
+    opacity: 0.8,
   },
   inlineRetry: {
     alignSelf: 'flex-start',
