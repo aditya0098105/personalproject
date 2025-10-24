@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Image } from 'expo-image';
-import * as WebBrowser from 'expo-web-browser';
+import { useRouter } from 'expo-router';
 import {
   ActivityIndicator,
   FlatList,
@@ -21,6 +21,9 @@ type Article = {
   title: string;
   url: string;
   urlToImage: string | null;
+  author?: string | null;
+  description?: string | null;
+  content?: string | null;
   source?: {
     name: string;
   };
@@ -29,6 +32,7 @@ type Article = {
 const NEWS_ENDPOINT = 'https://saurav.tech/NewsAPI/top-headlines/category/general/in.json';
 
 export default function NewsroomFeedScreen() {
+  const router = useRouter();
   const colorScheme = useColorScheme();
   const palette = Colors[colorScheme ?? 'light'];
   const isDark = colorScheme === 'dark';
@@ -55,6 +59,9 @@ export default function NewsroomFeedScreen() {
             title: typeof item?.title === 'string' ? item.title : 'Untitled',
             url: typeof item?.url === 'string' ? item.url : '',
             urlToImage: typeof item?.urlToImage === 'string' ? item.urlToImage : null,
+            author: typeof item?.author === 'string' ? item.author : null,
+            description: typeof item?.description === 'string' ? item.description : null,
+            content: typeof item?.content === 'string' ? item.content : null,
             source: {
               name:
                 typeof item?.source?.name === 'string' && item.source.name.trim().length > 0
@@ -71,6 +78,14 @@ export default function NewsroomFeedScreen() {
             title: item.title ?? item.content ?? 'Untitled',
             url: item.readMoreUrl ?? item.url ?? '',
             urlToImage: item.imageUrl ?? null,
+            author: typeof item?.author === 'string' ? item.author : null,
+            description:
+              typeof item?.description === 'string'
+                ? item.description
+                : typeof item?.content === 'string'
+                  ? item.content
+                  : null,
+            content: typeof item?.content === 'string' ? item.content : null,
             source: {
               name: item.author ?? 'Inshorts',
             },
@@ -123,22 +138,36 @@ export default function NewsroomFeedScreen() {
     fetchArticles(false);
   }, [fetchArticles]);
 
-  const handleOpen = useCallback(async (url: string) => {
-    if (!url) return;
-    await WebBrowser.openBrowserAsync(url);
-  }, []);
+  const handleNavigate = useCallback(
+    (article: Article, index: number) => {
+      router.push({
+        pathname: '/news/[articleId]',
+        params: {
+          articleId: String(index),
+          title: article.title,
+          image: article.urlToImage ?? '',
+          author: article.author ?? '',
+          description: article.description ?? '',
+          content: article.content ?? '',
+          url: article.url,
+          source: article.source?.name ?? '',
+        },
+      });
+    },
+    [router],
+  );
 
   const handleRefresh = useCallback(() => {
     fetchArticles(true);
   }, [fetchArticles]);
 
   const renderArticle: ListRenderItem<Article> = useCallback(
-    ({ item }) => {
+    ({ item, index }) => {
       const imageSource = item.urlToImage ? { uri: item.urlToImage } : { uri: placeholderImage };
 
       return (
         <Pressable
-          onPress={() => handleOpen(item.url)}
+          onPress={() => handleNavigate(item, index)}
           style={[styles.card, { backgroundColor: cardSurface, borderColor: borderSubtle }]}
         >
           <Image source={imageSource} style={styles.cardImage} contentFit="cover" transition={200} />
@@ -153,7 +182,7 @@ export default function NewsroomFeedScreen() {
         </Pressable>
       );
     },
-    [borderSubtle, cardSurface, handleOpen, palette.tint, placeholderImage],
+    [borderSubtle, cardSurface, handleNavigate, palette.tint, placeholderImage],
   );
 
   const listHeader = useMemo(
