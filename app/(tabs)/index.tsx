@@ -56,6 +56,12 @@ const quickActions = [
     icon: 'exclamationmark.triangle.fill',
     route: '/(tabs)/expose',
   },
+  {
+    title: 'Command Center',
+    subtitle: 'Investor-grade controls',
+    icon: 'slider.horizontal.3',
+    route: '/(tabs)/command-center',
+  },
 ];
 
 const forwardFocus = [

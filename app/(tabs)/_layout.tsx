@@ -39,6 +39,13 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="command-center"
+        options={{
+          title: 'Command',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="slider.horizontal.3" color={color} />,
+        }}
+      />
     </Tabs>
   );
 }
