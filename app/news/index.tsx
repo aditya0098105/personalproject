@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import {
   ActivityIndicator,
@@ -13,6 +14,7 @@ import {
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import { FALLBACK_ARTICLES } from '@/constants/news-fallback';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -30,6 +32,7 @@ type Article = {
 };
 
 const NEWS_ENDPOINT = 'https://saurav.tech/NewsAPI/top-headlines/category/general/in.json';
+const heroTopics = ['Impact', 'Policy', 'Climate', 'Cities'];
 
 export default function NewsroomFeedScreen() {
   const router = useRouter();
@@ -43,8 +46,9 @@ export default function NewsroomFeedScreen() {
   const [error, setError] = useState<string | null>(null);
   const [usingFallback, setUsingFallback] = useState(false);
 
-  const cardSurface = isDark ? 'rgba(15, 23, 42, 0.75)' : '#ffffff';
-  const borderSubtle = isDark ? 'rgba(148, 163, 184, 0.24)' : '#e2e8f0';
+  const cardSurface = palette.card ?? (isDark ? 'rgba(15, 23, 42, 0.78)' : '#ffffff');
+  const borderSubtle = palette.stroke ?? (isDark ? 'rgba(148, 163, 184, 0.24)' : '#e2e8f0');
+  const tintedSurface = isDark ? 'rgba(99, 102, 241, 0.28)' : 'rgba(99, 102, 241, 0.12)';
   const placeholderImage = useMemo(
     () =>
       'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80',
@@ -170,7 +174,20 @@ export default function NewsroomFeedScreen() {
           onPress={() => handleNavigate(item, index)}
           style={[styles.card, { backgroundColor: cardSurface, borderColor: borderSubtle }]}
         >
-          <Image source={imageSource} style={styles.cardImage} contentFit="cover" transition={200} />
+          <View style={styles.cardImageWrap}>
+            <Image source={imageSource} style={styles.cardImage} contentFit="cover" transition={200} />
+            <LinearGradient
+              colors={['rgba(15, 23, 42, 0)', 'rgba(15, 23, 42, 0.75)']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              style={styles.cardImageOverlay}
+            />
+            <View style={styles.cardBadgeRow}>
+              <View style={[styles.cardBadge, { backgroundColor: tintedSurface }]}>
+                <ThemedText style={[styles.cardBadgeLabel, { color: palette.tint }]}>Live</ThemedText>
+              </View>
+            </View>
+          </View>
           <View style={styles.cardBody}>
             <ThemedText style={[styles.sourceLabel, { color: palette.tint }]} numberOfLines={1}>
               {item.source?.name ?? 'Unknown source'}
@@ -178,30 +195,90 @@ export default function NewsroomFeedScreen() {
             <ThemedText type="subtitle" style={styles.headline} numberOfLines={3}>
               {item.title}
             </ThemedText>
+            {item.description ? (
+              <ThemedText style={styles.cardSummary} numberOfLines={3}>
+                {item.description}
+              </ThemedText>
+            ) : null}
+            <View style={styles.cardFooter}>
+              <View style={styles.cardMeta}>
+                {item.author ? <ThemedText style={styles.cardMetaText}>{item.author}</ThemedText> : null}
+                <ThemedText style={styles.cardMetaSubtle}>
+                  {usingFallback ? 'Cached update' : 'Updated moments ago'}
+                </ThemedText>
+              </View>
+              <IconSymbol name="arrow.right" size={18} color={palette.tint} />
+            </View>
           </View>
         </Pressable>
       );
     },
-    [borderSubtle, cardSurface, handleNavigate, palette.tint, placeholderImage],
+    [borderSubtle, cardSurface, handleNavigate, palette.tint, placeholderImage, tintedSurface, usingFallback],
   );
 
   const listHeader = useMemo(
     () => (
       <View style={styles.header}>
-        <ThemedText type="title" style={styles.title}>
-          Top Headlines
-        </ThemedText>
-        <ThemedText style={styles.subtitle}>
-          Stay updated with the latest stories from across India. Pull down to refresh for the newest headlines.
-        </ThemedText>
+        <LinearGradient
+          colors={
+            colorScheme === 'dark'
+              ? palette.gradient ?? ['#4c1d95', '#0f766e']
+              : palette.gradient ?? ['#6366f1', '#14b8a6']
+          }
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.heroCard}
+        >
+          <View style={styles.heroCardBody}>
+            <ThemedText style={styles.heroCardEyebrow} lightColor="rgba(255,255,255,0.85)" darkColor="rgba(255,255,255,0.85)">
+              Daily briefing
+            </ThemedText>
+            <ThemedText type="title" style={styles.heroCardTitle} lightColor="#ffffff" darkColor="#ffffff">
+              Top headlines
+            </ThemedText>
+            <ThemedText style={styles.heroCardSubtitle} lightColor="rgba(255,255,255,0.85)" darkColor="rgba(255,255,255,0.85)">
+              Stay updated with the latest stories across India. Pull down anytime for a fresh intelligence sweep.
+            </ThemedText>
+            <View style={styles.heroChipRow}>
+              {heroTopics.map((topic) => (
+                <View
+                  key={topic}
+                  style={[
+                    styles.heroChip,
+                    {
+                      backgroundColor: colorScheme === 'dark' ? 'rgba(15, 23, 42, 0.45)' : 'rgba(255, 255, 255, 0.18)',
+                    },
+                  ]}
+                >
+                  <ThemedText style={styles.heroChipText} lightColor="#ffffff" darkColor="#ffffff">
+                    {topic}
+                  </ThemedText>
+                </View>
+              ))}
+            </View>
+            <Pressable
+              onPress={handleRefresh}
+              style={[
+                styles.heroRefresh,
+                { backgroundColor: colorScheme === 'dark' ? 'rgba(15, 23, 42, 0.45)' : 'rgba(255, 255, 255, 0.24)' },
+              ]}
+            >
+              <ThemedText style={styles.heroRefreshText} lightColor="#ffffff" darkColor="#ffffff">
+                Refresh now
+              </ThemedText>
+              <IconSymbol name="arrow.right" size={16} color="#ffffff" />
+            </Pressable>
+          </View>
+        </LinearGradient>
       </View>
     ),
-    [],
+    [colorScheme, handleRefresh, palette.gradient],
   );
 
   const listFooter = useMemo(
     () => (
       <View style={styles.footer}>
+        <View style={[styles.footerAccent, { backgroundColor: palette.tint }]} />
         <ThemedText style={styles.footerText}>
           {usingFallback
             ? 'Showing cached headlines while we reconnect to live sources.'
@@ -209,7 +286,7 @@ export default function NewsroomFeedScreen() {
         </ThemedText>
       </View>
     ),
-    [usingFallback],
+    [palette.tint, usingFallback],
   );
 
   if (loading && !refreshing && articles.length === 0) {
@@ -281,33 +358,101 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: 20,
-    paddingBottom: 24,
-    paddingTop: 12,
+    paddingBottom: 28,
+    paddingTop: 16,
   },
   header: {
-    gap: 8,
-    marginBottom: 12,
+    marginBottom: 20,
   },
-  title: {
-    fontSize: 32,
+  heroCard: {
+    borderRadius: 26,
+    padding: 1,
+    overflow: 'hidden',
   },
-  subtitle: {
+  heroCardBody: {
+    padding: 20,
+    gap: 12,
+  },
+  heroCardEyebrow: {
+    fontSize: 13,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    fontWeight: '600',
+  },
+  heroCardTitle: {
+    fontSize: 30,
+    lineHeight: 34,
+  },
+  heroCardSubtitle: {
     fontSize: 16,
     lineHeight: 24,
-    opacity: 0.85,
+  },
+  heroChipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 4,
+  },
+  heroChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  heroChipText: {
+    fontSize: 12,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    fontWeight: '600',
+  },
+  heroRefresh: {
+    marginTop: 12,
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 999,
+  },
+  heroRefreshText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   card: {
-    borderRadius: 20,
-    overflow: 'hidden',
+    borderRadius: 24,
     borderWidth: 1,
+    overflow: 'hidden',
+  },
+  cardImageWrap: {
+    height: 200,
+    position: 'relative',
+    backgroundColor: '#cbd5f5',
   },
   cardImage: {
     width: '100%',
-    height: 200,
-    backgroundColor: '#cbd5f5',
+    height: '100%',
+  },
+  cardImageOverlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  cardBadgeRow: {
+    position: 'absolute',
+    top: 14,
+    left: 14,
+  },
+  cardBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  cardBadgeLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
   cardBody: {
-    padding: 16,
+    padding: 18,
     gap: 12,
   },
   sourceLabel: {
@@ -319,16 +464,48 @@ const styles = StyleSheet.create({
     fontSize: 20,
     lineHeight: 26,
   },
+  cardSummary: {
+    fontSize: 15,
+    lineHeight: 22,
+    opacity: 0.85,
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  cardMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexShrink: 1,
+  },
+  cardMetaText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  cardMetaSubtle: {
+    fontSize: 13,
+    opacity: 0.75,
+  },
   separator: {
     height: 20,
   },
   footer: {
     marginTop: 24,
     alignItems: 'center',
+    gap: 8,
+  },
+  footerAccent: {
+    width: 36,
+    height: 3,
+    borderRadius: 999,
   },
   footerText: {
     fontSize: 14,
     opacity: 0.7,
+    textAlign: 'center',
   },
   centered: {
     flex: 1,

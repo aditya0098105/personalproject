@@ -5,29 +5,45 @@
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#67e8f9';
-const accentColorLight = '#38bdf8';
-const accentColorDark = '#22d3ee';
+const tintColorLight = '#6366f1';
+const tintColorDark = '#8b5cf6';
+const accentColorLight = '#14b8a6';
+const accentColorDark = '#2dd4bf';
+const surfaceColorLight = '#f5f7fb';
+const surfaceColorDark = '#020617';
+const elevatedSurfaceLight = '#ffffff';
+const elevatedSurfaceDark = 'rgba(15, 23, 42, 0.92)';
+const subtleStrokeLight = '#d4d8ed';
+const subtleStrokeDark = 'rgba(148, 163, 184, 0.35)';
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
+    text: '#0f172a',
+    background: surfaceColorLight,
     tint: tintColorLight,
     accent: accentColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
+    icon: '#475569',
+    tabIconDefault: '#64748b',
     tabIconSelected: tintColorLight,
+    card: elevatedSurfaceLight,
+    muted: '#64748b',
+    stroke: subtleStrokeLight,
+    gradient: ['#6366f1', '#14b8a6'],
+    secondaryGradient: ['#38bdf8', '#ec4899'],
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
+    text: '#e2e8f0',
+    background: surfaceColorDark,
     tint: tintColorDark,
     accent: accentColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
+    icon: '#94a3b8',
+    tabIconDefault: '#64748b',
     tabIconSelected: tintColorDark,
+    card: elevatedSurfaceDark,
+    muted: '#94a3b8',
+    stroke: subtleStrokeDark,
+    gradient: ['#4c1d95', '#0f766e'],
+    secondaryGradient: ['#0ea5e9', '#ec4899'],
   },
 };
 
