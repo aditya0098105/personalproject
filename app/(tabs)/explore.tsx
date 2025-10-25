@@ -106,7 +106,7 @@ export default function ExploreScreen() {
   const { user, signOut } = useAuth();
 
   const handleSignOut = () => {
-    Alert.alert('Sign out', 'Are you sure you want to leave the Global Dispatch?', [
+    Alert.alert('Sign out', 'Are you sure you want to leave Timeline Intelligence?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Sign out',
@@ -218,7 +218,7 @@ export default function ExploreScreen() {
 
       <SectionBlock
         title="Intelligence signals"
-        caption="Realtime dashboards powering the Global Dispatch"
+        caption="Realtime dashboards powering Timeline Intelligence"
         icon="waveform.path.ecg"
         surface={cardSurface}
         borderColor={borderSubtle}

@@ -6,13 +6,17 @@ import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { worldGovernanceCountries } from '@/constants/governance';
+import {
+  governanceIndexRecords,
+  governanceRegions,
+  type GovernanceRecord,
+} from '@/constants/governance';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
-const regions = ['All', 'Africa', 'Americas', 'Asia', 'Europe', 'Oceania'] as const;
+const regionFilters = governanceRegions;
 
-type RegionFilter = (typeof regions)[number];
+type RegionFilter = (typeof regionFilters)[number];
 
 function ProgressBar({ value, tint }: { value: number; tint: string }) {
   return (
@@ -20,17 +24,6 @@ function ProgressBar({ value, tint }: { value: number; tint: string }) {
       <View style={[styles.progressFill, { width: `${Math.min(100, Math.max(0, value))}%`, backgroundColor: tint }]} />
     </View>
   );
-}
-
-function deriveScore(name: string) {
-  const base = 48 + (name.charCodeAt(0) % 36);
-  const vowelBoost = ['a', 'e', 'i', 'o', 'u'].includes(name[0].toLowerCase()) ? 6 : 0;
-  return Math.min(100, base + vowelBoost + (name.length % 7));
-}
-
-function deriveChange(name: string) {
-  const raw = (name.charCodeAt(name.length - 1) % 5) - 2;
-  return raw;
 }
 
 export default function GovernanceIndexScreen() {
@@ -43,9 +36,9 @@ export default function GovernanceIndexScreen() {
 
   const filteredCountries = useMemo(() => {
     if (selectedRegion === 'All') {
-      return worldGovernanceCountries;
+      return governanceIndexRecords;
     }
-    return worldGovernanceCountries.filter((country) => country.region === selectedRegion);
+    return governanceIndexRecords.filter((country) => country.region === selectedRegion);
   }, [selectedRegion]);
 
   return (
@@ -54,7 +47,7 @@ export default function GovernanceIndexScreen() {
       headerImage={
         <Image
           source={{
-            uri: 'https://images.unsplash.com/photo-1521293281845-245c3ac07a50?auto=format&fit=crop&w=1600&q=80',
+            uri: 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1600&q=80',
           }}
           style={styles.headerImage}
         />
@@ -65,13 +58,49 @@ export default function GovernanceIndexScreen() {
           Governance Index
         </ThemedText>
         <ThemedText style={styles.subtitle}>
-          Benchmarking transparency, participation, and service delivery across every recognised nation. Scores combine our
-          open governance dataset with civic tech adoption indicators.
+          Comparative look at perceived public-sector integrity using Transparency International’s 2023 Corruption Perceptions
+          Index. Track movements since the 2022 release and scan our desk notes for each highlighted country.
         </ThemedText>
       </ThemedView>
 
+      <ThemedView
+        lightColor={cardSurface}
+        darkColor={cardSurface}
+        style={[styles.dataSourceCard, { borderColor: borderSubtle }]}
+      >
+        <View style={styles.dataSourceHeader}>
+          <View
+            style={[
+              styles.dataSourceIcon,
+              { backgroundColor: colorScheme === 'dark' ? 'rgba(148,163,184,0.18)' : 'rgba(10,126,164,0.12)' },
+            ]}
+          >
+            <IconSymbol name="chart.bar" size={18} color={palette.tint} />
+          </View>
+          <View style={styles.dataSourceCopy}>
+            <ThemedText type="defaultSemiBold" style={styles.dataSourceTitle}>
+              Dataset coverage
+            </ThemedText>
+            <ThemedText style={styles.dataSourceSubtitle}>
+              CPI 2023 ranks 180 countries/territories on perceived public-sector corruption (0 = highly corrupt, 100 = very
+              clean). Scores here spotlight regional leaders and notable movers against the 2022 baseline.
+            </ThemedText>
+          </View>
+        </View>
+        <View style={styles.dataPointsRow}>
+          {buildDataPoints(governanceIndexRecords).map((point) => (
+            <View key={point.label} style={styles.dataPoint}>
+              <ThemedText type="subtitle" style={styles.dataPointValue}>
+                {point.value}
+              </ThemedText>
+              <ThemedText style={styles.dataPointLabel}>{point.label}</ThemedText>
+            </View>
+          ))}
+        </View>
+      </ThemedView>
+
       <View style={styles.filterRow}>
-        {regions.map((region) => {
+        {regionFilters.map((region) => {
           const isActive = selectedRegion === region;
           return (
             <Pressable
@@ -101,42 +130,88 @@ export default function GovernanceIndexScreen() {
         keyExtractor={(item) => item.name}
         contentContainerStyle={styles.listContent}
         scrollEnabled={false}
-        renderItem={({ item }) => {
-          const score = deriveScore(item.name);
-          const change = deriveChange(item.name);
-          return (
-            <ThemedView
-              lightColor={cardSurface}
-              darkColor={cardSurface}
-              style={[styles.countryCard, { borderColor: borderSubtle }]}
-            >
-              <View style={styles.countryHeader}>
-                <View style={styles.countryNameRow}>
-                  <IconSymbol name="globe" size={18} color={palette.tint} />
-                  <ThemedText type="subtitle" style={styles.countryName}>
-                    {item.name}
-                  </ThemedText>
-                </View>
-                <View style={styles.regionPill}>
-                  <ThemedText style={[styles.regionLabel, { color: palette.tint }]}>{item.region}</ThemedText>
-                </View>
-              </View>
-              <View style={styles.scoreRow}>
-                <ThemedText style={styles.scoreLabel}>Index score</ThemedText>
-                <ThemedText type="defaultSemiBold" style={styles.scoreValue}>
-                  {score}
-                </ThemedText>
-              </View>
-              <ProgressBar value={score} tint={palette.tint} />
-              <ThemedText style={styles.changeLabel}>
-                {change > 0 ? `▲ ${change} week trend` : change < 0 ? `▼ ${Math.abs(change)} week trend` : 'Stable week trend'}
-              </ThemedText>
-            </ThemedView>
-          );
-        }}
+        renderItem={({ item }) => (
+          <GovernanceCard
+            record={item}
+            paletteTint={palette.tint}
+            borderColor={borderSubtle}
+            surfaceColor={cardSurface}
+          />
+        )}
         ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
       />
     </ParallaxScrollView>
+  );
+}
+
+function buildDataPoints(records: GovernanceRecord[]) {
+  const averageScore = records.reduce((acc, record) => acc + record.score, 0) / records.length;
+  const positiveMovers = records.filter((record) => record.change > 0).length;
+  const negativeMovers = records.filter((record) => record.change < 0).length;
+
+  return [
+    { label: 'Average score', value: averageScore.toFixed(1) },
+    { label: 'Countries improving', value: positiveMovers },
+    { label: 'Countries declining', value: negativeMovers },
+  ] as const;
+}
+
+function GovernanceCard({
+  record,
+  paletteTint,
+  borderColor,
+  surfaceColor,
+}: {
+  record: GovernanceRecord;
+  paletteTint: string;
+  borderColor: string;
+  surfaceColor: string;
+}) {
+  const changeLabel =
+    record.change > 0
+      ? `▲ ${record.change} vs 2022`
+      : record.change < 0
+        ? `▼ ${Math.abs(record.change)} vs 2022`
+        : 'No change vs 2022';
+
+  return (
+    <ThemedView lightColor={surfaceColor} darkColor={surfaceColor} style={[styles.countryCard, { borderColor }] }>
+      <View style={styles.countryHeader}>
+        <View style={styles.countryNameRow}>
+          <IconSymbol name="globe" size={18} color={paletteTint} />
+          <ThemedText type="subtitle" style={styles.countryName}>
+            {record.name}
+          </ThemedText>
+        </View>
+        <View style={[styles.regionPill, { borderColor: paletteTint }] }>
+          <ThemedText style={[styles.regionLabel, { color: paletteTint }]}>{record.region}</ThemedText>
+        </View>
+      </View>
+
+      <View style={styles.scoreMetaRow}>
+        <View>
+          <ThemedText style={styles.scoreLabel}>CPI score</ThemedText>
+          <ThemedText type="title" style={styles.scoreValue}>
+            {record.score}
+          </ThemedText>
+        </View>
+        <View style={[styles.rankBadge, { borderColor: paletteTint }] }>
+          <ThemedText style={[styles.rankLabel, { color: paletteTint }]}>#{record.rank}</ThemedText>
+          <ThemedText style={styles.rankCaption}>global rank</ThemedText>
+        </View>
+      </View>
+
+      <ProgressBar value={record.score} tint={paletteTint} />
+
+      <ThemedText style={styles.changeLabel}>{changeLabel}</ThemedText>
+
+      <ThemedText style={styles.briefCopy}>{record.brief}</ThemedText>
+
+      <View style={styles.sourceRow}>
+        <IconSymbol name="info.circle" size={16} color={paletteTint} />
+        <ThemedText style={styles.sourceText}>{record.source}</ThemedText>
+      </View>
+    </ThemedView>
   );
 }
 
@@ -156,6 +231,55 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     opacity: 0.9,
+  },
+  dataSourceCard: {
+    borderWidth: 1,
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 24,
+    gap: 16,
+  },
+  dataSourceHeader: {
+    flexDirection: 'row',
+    gap: 14,
+    alignItems: 'flex-start',
+  },
+  dataSourceIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dataSourceCopy: {
+    flex: 1,
+    gap: 4,
+  },
+  dataSourceTitle: {
+    fontSize: 15,
+    letterSpacing: 0.2,
+    textTransform: 'uppercase',
+  },
+  dataSourceSubtitle: {
+    fontSize: 14,
+    lineHeight: 20,
+    opacity: 0.85,
+  },
+  dataPointsRow: {
+    flexDirection: 'row',
+    gap: 20,
+    flexWrap: 'wrap',
+  },
+  dataPoint: {
+    flexGrow: 1,
+    minWidth: 110,
+  },
+  dataPointValue: {
+    fontSize: 24,
+  },
+  dataPointLabel: {
+    fontSize: 13,
+    opacity: 0.75,
   },
   filterRow: {
     flexDirection: 'row',
@@ -177,7 +301,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    gap: 12,
+    gap: 16,
   },
   countryHeader: {
     flexDirection: 'row',
@@ -202,31 +326,67 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
-  scoreRow: {
+  scoreMetaRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   scoreLabel: {
     fontSize: 13,
-    letterSpacing: 0.2,
+    letterSpacing: 0.3,
     textTransform: 'uppercase',
+    opacity: 0.75,
   },
   scoreValue: {
-    fontSize: 20,
+    fontSize: 28,
+  },
+  rankBadge: {
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+    minWidth: 92,
+  },
+  rankLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  rankCaption: {
+    fontSize: 11,
+    opacity: 0.7,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
   progressTrack: {
     height: 6,
     borderRadius: 999,
     overflow: 'hidden',
+    backgroundColor: 'rgba(148, 163, 184, 0.25)',
   },
   progressFill: {
     height: '100%',
     borderRadius: 999,
   },
   changeLabel: {
+    marginTop: 6,
     fontSize: 13,
-    opacity: 0.7,
+    letterSpacing: 0.2,
+  },
+  briefCopy: {
+    fontSize: 14,
+    lineHeight: 22,
+    opacity: 0.85,
+  },
+  sourceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  sourceText: {
+    fontSize: 12,
+    opacity: 0.75,
   },
 });

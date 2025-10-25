@@ -9,6 +9,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { TimelineLogo } from '@/components/timeline-logo';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import {
   documentarySpotlight,
@@ -19,9 +20,9 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 const heroMetrics = [
-  { label: 'Global correspondents', value: '92' },
-  { label: 'Daily briefings', value: '34' },
-  { label: 'Investigations running', value: '18' },
+  { label: 'Global correspondents', value: '118' },
+  { label: 'Policy briefings / week', value: '42' },
+  { label: 'Investigations active', value: '23' },
 ];
 
 const quickActions = [
@@ -91,6 +92,7 @@ export default function HomeScreen() {
   const forwardSurface = colorScheme === 'dark' ? 'rgba(148, 163, 184, 0.1)' : '#fdfdfd';
   const tintedSurface = colorScheme === 'dark' ? 'rgba(148, 163, 184, 0.25)' : 'rgba(10, 126, 164, 0.12)';
   const heroBadgeForeground = colorScheme === 'dark' ? '#f8fafc' : palette.background;
+  const heroBadgeBackground = colorScheme === 'dark' ? 'rgba(15, 23, 42, 0.75)' : 'rgba(15, 23, 42, 0.86)';
   const router = useRouter();
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterStatus, setNewsletterStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -119,7 +121,7 @@ export default function HomeScreen() {
       type: 'success',
       message: 'Thanks! Your weekend intelligence briefing will land in your inbox.',
     });
-    Alert.alert('You’re on the list', 'We’ll deliver our next Global Dispatch digest straight to you.');
+    Alert.alert('You’re on the list', 'We’ll deliver our next Timeline Intelligence digest straight to you.');
   }, [newsletterEmail]);
 
   return (
@@ -128,22 +130,22 @@ export default function HomeScreen() {
       headerImage={
         <Image
           source={{
-            uri: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80',
+            uri: 'https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=1600&q=80',
           }}
           style={styles.headerImage}
         />
       }>
       <ThemedView style={styles.hero}>
-        <View style={styles.heroBadge}>
-          <IconSymbol name="sparkles" size={18} color={heroBadgeForeground} />
-          <ThemedText style={[styles.heroBadgeText, { color: heroBadgeForeground }]}>Studio Signal</ThemedText>
+        <View style={[styles.heroBadge, { backgroundColor: heroBadgeBackground }] }>
+          <TimelineLogo size={38} />
+          <ThemedText style={[styles.heroBadgeText, { color: heroBadgeForeground }]}>Timeline Intelligence</ThemedText>
         </View>
         <ThemedText type="title" style={styles.heroTitle}>
-          Global Dispatch
+          Global Affairs Index
         </ThemedText>
         <ThemedText style={styles.heroSubtitle}>
-          Precision reporting, cinematic storytelling, and daily intelligence for leaders navigating a fast-changing
-          world.
+          Precision reporting, cinematic storytelling, and actionable briefings for decision-makers navigating volatile
+          civic landscapes.
         </ThemedText>
         <View style={styles.metricRow}>
           {heroMetrics.map((metric) => (
@@ -384,13 +386,12 @@ const styles = StyleSheet.create({
   },
   heroBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: '#0f172a',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 999,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 10,
   },
   heroBadgeText: {
     fontWeight: '600',
