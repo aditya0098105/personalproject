@@ -2,7 +2,7 @@ import type { ComponentProps } from 'react';
 import { useCallback, useState } from 'react';
 import { Image } from 'expo-image';
 import * as WebBrowser from 'expo-web-browser';
-import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -93,6 +93,12 @@ export default function HomeScreen() {
   const tintedSurface = colorScheme === 'dark' ? 'rgba(99, 102, 241, 0.28)' : 'rgba(99, 102, 241, 0.12)';
   const heroBadgeForeground = colorScheme === 'dark' ? '#f8fafc' : palette.background;
   const heroBadgeBackground = colorScheme === 'dark' ? 'rgba(15, 23, 42, 0.88)' : '#ffffff';
+  const documentaryBadgeSurface = colorScheme === 'dark' ? 'rgba(59, 130, 246, 0.35)' : 'rgba(15, 23, 42, 0.45)';
+  const documentaryBadgeText = '#f8fafc';
+  const documentaryTagSurface = colorScheme === 'dark' ? 'rgba(148, 163, 184, 0.18)' : 'rgba(226, 232, 240, 0.76)';
+  const documentaryTagText = colorScheme === 'dark' ? '#f8fafc' : '#0f172a';
+  const documentaryDurationText = colorScheme === 'dark' ? 'rgba(226, 232, 240, 0.92)' : 'rgba(241, 245, 249, 0.95)';
+  const documentarySummaryText = colorScheme === 'dark' ? 'rgba(226, 232, 240, 0.86)' : 'rgba(248, 250, 252, 0.92)';
   const router = useRouter();
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterStatus, setNewsletterStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -224,28 +230,99 @@ export default function HomeScreen() {
       </View>
 
       <SectionHeader title="Documentaries" caption="Immersive stories from the field" icon="film.fill" />
-      {documentarySpotlight.map((feature) => (
-        <Pressable
-          key={feature.slug}
-          onPress={() => handleOpenDocumentary(feature.url)}
-          style={[styles.featureCard, { backgroundColor: featureSurface }]}
-        >
-          <Image source={{ uri: feature.image }} style={styles.featureImage} contentFit="cover" />
-          <View style={styles.featureContent}>
-            <ThemedText type="subtitle" style={styles.featureTitle}>
-              {feature.title}
-            </ThemedText>
-            <ThemedText style={styles.featureMeta}>{feature.duration}</ThemedText>
-            <ThemedText style={styles.featureSummary}>{feature.summary}</ThemedText>
-            <View style={styles.featureAction}>
-              <ThemedText type="defaultSemiBold" style={{ color: palette.tint }}>
-                View documentary brief
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.documentaryCarousel}
+      >
+        {documentarySpotlight.map((feature, index) => (
+          <Pressable
+            key={feature.slug}
+            onPress={() => handleOpenDocumentary(feature.url)}
+            style={[
+              styles.documentaryCard,
+              {
+                backgroundColor: featureSurface,
+                borderColor: borderSubtle,
+                marginLeft: index === 0 ? 4 : 0,
+              },
+            ]}
+          >
+            <Image source={{ uri: feature.image }} style={styles.documentaryMedia} contentFit="cover" />
+            <LinearGradient
+              colors={['rgba(15,23,42,0.1)', 'rgba(15,23,42,0.92)']}
+              style={styles.documentaryOverlay}
+            />
+            <View style={styles.documentaryInfo}>
+              <View style={styles.documentaryMetaRow}>
+                <View style={[styles.documentaryBadge, { backgroundColor: documentaryBadgeSurface }]}>
+                  <IconSymbol name="sparkles" size={14} color={documentaryBadgeText} />
+                  <ThemedText
+                    type="defaultSemiBold"
+                    style={styles.documentaryBadgeLabel}
+                    lightColor={documentaryBadgeText}
+                    darkColor={documentaryBadgeText}
+                  >
+                    Spotlight
+                  </ThemedText>
+                </View>
+                <ThemedText
+                  style={styles.documentaryDuration}
+                  lightColor={documentaryDurationText}
+                  darkColor={documentaryDurationText}
+                >
+                  {feature.duration}
+                </ThemedText>
+              </View>
+
+              <ThemedText
+                type="subtitle"
+                style={styles.documentaryTitle}
+                lightColor="#f8fafc"
+                darkColor="#f8fafc"
+              >
+                {feature.title}
               </ThemedText>
-              <IconSymbol name="arrow.right" size={16} color={palette.tint} />
+              <ThemedText
+                style={styles.documentarySummary}
+                lightColor={documentarySummaryText}
+                darkColor={documentarySummaryText}
+              >
+                {feature.summary}
+              </ThemedText>
+
+              <View style={styles.documentaryTags}>
+                {feature.tags.slice(0, 2).map((tag) => (
+                  <View
+                    key={`${feature.slug}-${tag}`}
+                    style={[styles.documentaryTag, { backgroundColor: documentaryTagSurface }]}
+                  >
+                    <ThemedText
+                      style={styles.documentaryTagLabel}
+                      lightColor={documentaryTagText}
+                      darkColor={documentaryTagText}
+                    >
+                      {tag}
+                    </ThemedText>
+                  </View>
+                ))}
+              </View>
+
+              <View style={styles.documentaryAction}>
+                <IconSymbol name="play.fill" size={16} color={palette.tint} />
+                <ThemedText
+                  type="defaultSemiBold"
+                  style={styles.documentaryActionLabel}
+                  lightColor={palette.tint}
+                  darkColor={palette.tint}
+                >
+                  Watch trailer
+                </ThemedText>
+              </View>
             </View>
-          </View>
-        </Pressable>
-      ))}
+          </Pressable>
+        ))}
+      </ScrollView>
 
       <SectionHeader title="Protest Watch" caption="Current movements shaping policy" icon="megaphone.fill" />
       <ThemedView
@@ -560,37 +637,92 @@ const styles = StyleSheet.create({
     fontSize: 13,
     opacity: 0.75,
   },
-  featureCard: {
-    borderRadius: 20,
+  documentaryCarousel: {
+    paddingBottom: 4,
+    paddingRight: 24,
+  },
+  documentaryCard: {
+    width: 280,
+    height: 320,
+    borderRadius: 24,
     overflow: 'hidden',
-    marginBottom: 16,
+    borderWidth: 1,
+    marginRight: 16,
+    shadowColor: '#0f172a',
+    shadowOpacity: 0.18,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 6,
   },
-  featureImage: {
-    width: '100%',
-    height: 180,
+  documentaryMedia: {
+    ...StyleSheet.absoluteFillObject,
   },
-  featureContent: {
+  documentaryOverlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  documentaryInfo: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
     padding: 20,
     gap: 10,
   },
-  featureTitle: {
-    fontSize: 20,
+  documentaryMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  featureMeta: {
-    fontSize: 13,
-    opacity: 0.8,
-    letterSpacing: 0.2,
+  documentaryBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  documentaryBadgeLabel: {
+    fontSize: 12,
+    letterSpacing: 0.6,
     textTransform: 'uppercase',
   },
-  featureSummary: {
-    fontSize: 15,
-    lineHeight: 22,
+  documentaryDuration: {
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  featureAction: {
+  documentaryTitle: {
+    fontSize: 22,
+    lineHeight: 28,
+  },
+  documentarySummary: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  documentaryTags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  documentaryTag: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  documentaryTagLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  documentaryAction: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginTop: 4,
+    marginTop: 6,
+  },
+  documentaryActionLabel: {
+    fontSize: 14,
   },
   panelCard: {
     borderRadius: 20,

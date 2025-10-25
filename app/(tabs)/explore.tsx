@@ -76,24 +76,6 @@ const intelligenceSignals = [
   },
 ];
 
-const resourceHub = [
-  {
-    title: 'Field guide: Covering demonstrations with care',
-    description: 'Updated legal briefings, rapid deployment safety checklists, and encrypted contact trees.',
-    action: 'Open protest protocols',
-  },
-  {
-    title: 'Documentary stylebook 2025',
-    description: 'Color grading LUTs, interview frameworks, and soundtrack licensing templates.',
-    action: 'Review filmmakers kit',
-  },
-  {
-    title: 'Editorial standards and ethics',
-    description: 'Governance, verification workflows, and AI-aided fact-checking policies.',
-    action: 'Read compliance charter',
-  },
-];
-
 export default function ExploreScreen() {
   const colorScheme = useColorScheme();
   const palette = Colors[colorScheme ?? 'light'];
@@ -247,31 +229,6 @@ export default function ExploreScreen() {
         ))}
       </SectionBlock>
 
-      <SectionBlock
-        title="Resource hub"
-        caption="Best-practice playbooks from every bureau"
-        icon="books.vertical.fill"
-        surface={cardSurface}
-        borderColor={borderSubtle}
-        tint={tint}
-      >
-        {resourceHub.map((resource) => (
-          <Pressable key={resource.title} style={[styles.resourceCard, { borderColor: borderSubtle }]}>
-            <View style={styles.resourceContent}>
-              <ThemedText type="subtitle" style={styles.resourceTitle}>
-                {resource.title}
-              </ThemedText>
-              <ThemedText style={styles.resourceDescription}>{resource.description}</ThemedText>
-            </View>
-            <View style={styles.resourceAction}>
-              <ThemedText type="defaultSemiBold" style={{ color: tint }}>
-                {resource.action}
-              </ThemedText>
-              <IconSymbol name="arrow.up.right" size={16} color={tint} />
-            </View>
-          </Pressable>
-        ))}
-      </SectionBlock>
     </ParallaxScrollView>
   );
 }
@@ -496,32 +453,5 @@ const styles = StyleSheet.create({
   signalDetail: {
     fontSize: 15,
     lineHeight: 22,
-  },
-  resourceCard: {
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'transparent',
-    padding: 16,
-    gap: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  resourceContent: {
-    flex: 1,
-    gap: 6,
-  },
-  resourceTitle: {
-    fontSize: 17,
-  },
-  resourceDescription: {
-    fontSize: 14,
-    lineHeight: 20,
-    opacity: 0.85,
-  },
-  resourceAction: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
   },
 });
