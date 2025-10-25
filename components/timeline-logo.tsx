@@ -8,71 +8,64 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 type TimelineLogoProps = {
   size?: number;
   showWordmark?: boolean;
+  stacked?: boolean;
 };
 
-export function TimelineLogo({ size = 48, showWordmark = false }: TimelineLogoProps) {
+export function TimelineLogo({ size = 48, showWordmark = false, stacked = false }: TimelineLogoProps) {
   const colorScheme = useColorScheme();
   const palette = Colors[colorScheme ?? 'light'];
-  const circleSize = size;
-  const lineWidth = Math.max(3, Math.round(circleSize * 0.08));
+  const borderWidth = Math.max(3, Math.round(size * 0.08));
+  const innerSize = size - borderWidth * 2;
+  const wordmarkColor = colorScheme === 'dark' ? '#f8fafc' : '#0f172a';
+  const badgeBackground = colorScheme === 'dark' ? 'rgba(15,23,42,0.92)' : '#f8fafc';
 
   return (
-    <View style={styles.wrapper}>
-      <View style={[styles.glyphRow, { gap: Math.round(circleSize * 0.18) }]}> 
-        <View style={{ alignItems: 'center' }}>
-          <LinearGradient
-            colors={[palette.tint, palette.accent]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[styles.circle, { width: circleSize, height: circleSize, borderRadius: circleSize / 2 }]}
-          />
-          <View
-            style={[
-              styles.verticalLine,
-              {
-                height: circleSize * 0.85,
-                width: lineWidth,
-                marginTop: -lineWidth,
-                backgroundColor: colorScheme === 'dark' ? 'rgba(226,232,240,0.7)' : 'rgba(15,23,42,0.15)',
-              },
-            ]}
-          />
-          <View
-            style={[
-              styles.node,
-              {
-                width: circleSize * 0.35,
-                height: circleSize * 0.35,
-                borderRadius: (circleSize * 0.35) / 2,
-                backgroundColor: colorScheme === 'dark' ? 'rgba(226,232,240,0.25)' : 'rgba(15,23,42,0.12)',
-              },
-            ]}
-          />
-        </View>
+    <View style={[styles.wrapper, stacked && styles.wrapperStacked]}>
+      <LinearGradient
+        colors={palette.gradient ?? [palette.tint, palette.accent]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.badge, { width: size, height: size, borderRadius: size / 2 }]}
+      >
         <View
           style={[
-            styles.glyphPillar,
+            styles.badgeInner,
             {
-              height: circleSize * 1.6,
-              width: lineWidth,
-              backgroundColor: palette.tint,
+              borderRadius: innerSize / 2,
+              padding: innerSize * 0.2,
+              backgroundColor: badgeBackground,
             },
           ]}
         >
-          <View
-            style={[
-              styles.pillarHighlight,
-              {
-                backgroundColor: colorScheme === 'dark' ? 'rgba(148,163,184,0.35)' : 'rgba(255,255,255,0.65)',
-              },
-            ]}
-          />
+          <View style={styles.timelineRow}>
+            <View style={styles.timelineColumn}>
+              <View
+                style={[
+                  styles.timelinePulse,
+                  {
+                    backgroundColor: palette.accent,
+                    opacity: colorScheme === 'dark' ? 0.3 : 0.2,
+                  },
+                ]}
+              />
+              <View style={[styles.timelineTrack, { backgroundColor: palette.muted }]} />
+              <View style={[styles.timelineNode, { backgroundColor: palette.tint }]} />
+            </View>
+            <View style={styles.timelineSignals}>
+              <View style={[styles.signalBar, { height: '70%', backgroundColor: palette.tint }]} />
+              <View style={[styles.signalBar, { height: '100%', backgroundColor: palette.accent }]} />
+              <View style={[styles.signalBar, { height: '45%', backgroundColor: palette.tint }]} />
+            </View>
+          </View>
         </View>
-      </View>
+      </LinearGradient>
       {showWordmark && (
-        <ThemedText type="subtitle" style={styles.wordmark}>
-          Timeline
-        </ThemedText>
+        <View style={styles.wordmarkBlock}>
+          <ThemedText type="subtitle" style={[styles.wordmark, { color: wordmarkColor }]}>
+            Timeline
+          </ThemedText>
+          <ThemedText style={[styles.tagline, { color: colorScheme === 'dark' ? '#cbd5f5' : '#475569' }]}>Intelligence</ThemedText>
+        </View>
       )}
     </View>
   );
@@ -84,38 +77,74 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  glyphRow: {
-    flexDirection: 'row',
+  wrapperStacked: {
+    flexDirection: 'column',
     alignItems: 'flex-start',
+    gap: 8,
   },
-  circle: {
-    overflow: 'hidden',
-  },
-  verticalLine: {
-    borderRadius: 999,
-  },
-  node: {
-    marginTop: 6,
-  },
-  glyphPillar: {
-    borderRadius: 999,
+  badge: {
     justifyContent: 'center',
-    position: 'relative',
+    alignItems: 'center',
+    padding: 3,
+  },
+  badgeInner: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
     overflow: 'hidden',
   },
-  pillarHighlight: {
-    position: 'absolute',
-    top: '12%',
-    left: '26%',
-    width: '38%',
-    height: '76%',
+  timelineRow: {
+    flexDirection: 'row',
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  timelineColumn: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 6,
+  },
+  timelinePulse: {
+    width: '80%',
+    aspectRatio: 1,
     borderRadius: 999,
-    opacity: 0.65,
+  },
+  timelineTrack: {
+    width: 6,
+    borderRadius: 999,
+    flexGrow: 1,
+  },
+  timelineNode: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  timelineSignals: {
+    flexDirection: 'row',
+    flex: 1,
+    gap: 4,
+    marginLeft: 8,
+    alignItems: 'flex-end',
+  },
+  signalBar: {
+    width: 6,
+    borderRadius: 999,
+  },
+  wordmarkBlock: {
+    gap: 2,
   },
   wordmark: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     letterSpacing: 0.6,
+  },
+  tagline: {
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
 });
 

@@ -85,14 +85,14 @@ function ProgressBar({ value, tint }: { value: number; tint: string }) {
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const palette = Colors[colorScheme ?? 'light'];
-  const borderSubtle = colorScheme === 'dark' ? 'rgba(148, 163, 184, 0.25)' : '#e2e8f0';
-  const highlightSurface = colorScheme === 'dark' ? 'rgba(15, 23, 42, 0.65)' : '#ffffff';
+  const borderSubtle = colorScheme === 'dark' ? palette.stroke ?? 'rgba(148, 163, 184, 0.25)' : palette.stroke ?? '#e2e8f0';
+  const highlightSurface = colorScheme === 'dark' ? 'rgba(15, 23, 42, 0.72)' : palette.card ?? '#ffffff';
   const featureSurface = colorScheme === 'dark' ? 'rgba(15, 23, 42, 0.85)' : '#0f172a';
-  const panelSurface = colorScheme === 'dark' ? 'rgba(15, 23, 42, 0.65)' : '#ffffff';
-  const forwardSurface = colorScheme === 'dark' ? 'rgba(148, 163, 184, 0.1)' : '#fdfdfd';
-  const tintedSurface = colorScheme === 'dark' ? 'rgba(148, 163, 184, 0.25)' : 'rgba(10, 126, 164, 0.12)';
+  const panelSurface = colorScheme === 'dark' ? 'rgba(15, 23, 42, 0.7)' : palette.card ?? '#ffffff';
+  const forwardSurface = colorScheme === 'dark' ? 'rgba(148, 163, 184, 0.12)' : '#f6f7fb';
+  const tintedSurface = colorScheme === 'dark' ? 'rgba(99, 102, 241, 0.28)' : 'rgba(99, 102, 241, 0.12)';
   const heroBadgeForeground = colorScheme === 'dark' ? '#f8fafc' : palette.background;
-  const heroBadgeBackground = colorScheme === 'dark' ? 'rgba(15, 23, 42, 0.75)' : 'rgba(15, 23, 42, 0.86)';
+  const heroBadgeBackground = colorScheme === 'dark' ? 'rgba(15, 23, 42, 0.88)' : '#ffffff';
   const router = useRouter();
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterStatus, setNewsletterStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -130,39 +130,71 @@ export default function HomeScreen() {
       headerImage={
         <Image
           source={{
-            uri: 'https://images.unsplash.com/photo-1525182008055-f88b95ff7980?auto=format&fit=crop&w=1600&q=80',
+            uri: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80',
           }}
           style={styles.headerImage}
         />
       }>
-      <ThemedView style={styles.hero}>
-        <View style={[styles.heroBadge, { backgroundColor: heroBadgeBackground }] }>
-          <TimelineLogo size={38} />
-          <ThemedText style={[styles.heroBadgeText, { color: heroBadgeForeground }]}>Timeline Intelligence</ThemedText>
+      <LinearGradient
+        colors={colorScheme === 'dark' ? ['#111827', '#1f2937'] : ['#eef2ff', '#e0f2fe']}
+        style={styles.heroShell}
+      >
+        <View style={[styles.hero, { backgroundColor: heroBadgeBackground }] }>
+          <View style={styles.heroHeaderRow}>
+            <TimelineLogo size={52} showWordmark stacked />
+            <View style={styles.heroCtaBlock}>
+              <ThemedText style={[styles.heroCtaLabel, { color: heroBadgeForeground }]}>Live brief</ThemedText>
+              <Pressable
+                onPress={() => router.push('/news')}
+                style={[styles.heroButton, { backgroundColor: heroBadgeForeground }]}
+              >
+                <ThemedText
+                  type="defaultSemiBold"
+                  style={[styles.heroButtonLabel, { color: palette.tint }]}
+                  lightColor={palette.tint}
+                  darkColor={palette.tint}
+                >
+                  View headlines
+                </ThemedText>
+              </Pressable>
+            </View>
+          </View>
+          <ThemedText type="title" style={styles.heroTitle}>
+            Global Affairs Index
+          </ThemedText>
+          <ThemedText style={styles.heroSubtitle}>
+            Precision reporting, cinematic storytelling, and actionable briefings for decision-makers navigating volatile
+            civic landscapes.
+          </ThemedText>
+          <View style={styles.metricRow}>
+            {heroMetrics.map((metric) => (
+              <ThemedView
+                key={metric.label}
+                lightColor={metric.tone === 'accent' ? 'rgba(20, 184, 166, 0.08)' : highlightSurface}
+                darkColor={metric.tone === 'accent' ? 'rgba(45, 212, 191, 0.12)' : highlightSurface}
+                style={[styles.metricCard, { borderColor: borderSubtle }]}
+              >
+                <View style={styles.metricPill}>
+                  <LinearGradient
+                    colors={
+                      metric.tone === 'accent'
+                        ? palette.secondaryGradient ?? [palette.tint, palette.accent]
+                        : palette.gradient ?? [palette.tint, palette.accent]
+                    }
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.metricAccent}
+                  />
+                  <ThemedText type="subtitle" style={styles.metricValue}>
+                    {metric.value}
+                  </ThemedText>
+                </View>
+                <ThemedText style={styles.metricLabel}>{metric.label}</ThemedText>
+              </ThemedView>
+            ))}
+          </View>
         </View>
-        <ThemedText type="title" style={styles.heroTitle}>
-          Global Affairs Index
-        </ThemedText>
-        <ThemedText style={styles.heroSubtitle}>
-          Precision reporting, cinematic storytelling, and actionable briefings for decision-makers navigating volatile
-          civic landscapes.
-        </ThemedText>
-        <View style={styles.metricRow}>
-          {heroMetrics.map((metric) => (
-            <ThemedView
-              key={metric.label}
-              lightColor={highlightSurface}
-              darkColor={highlightSurface}
-              style={[styles.metricCard, { borderColor: borderSubtle }]}
-            >
-              <ThemedText type="subtitle" style={styles.metricValue}>
-                {metric.value}
-              </ThemedText>
-              <ThemedText style={styles.metricLabel}>{metric.label}</ThemedText>
-            </ThemedView>
-          ))}
-        </View>
-      </ThemedView>
+      </LinearGradient>
 
       <SectionHeader title="Quick launch" caption="Jump straight to live dashboards" icon="sparkles" />
       <View style={styles.quickGrid}>
@@ -172,9 +204,14 @@ export default function HomeScreen() {
             onPress={() => router.push(action.route)}
             style={[styles.quickCard, { borderColor: borderSubtle, backgroundColor: highlightSurface }]}
           >
-            <View style={[styles.quickIconWrap, { backgroundColor: tintedSurface }]}> 
-              <IconSymbol name={action.icon as ComponentProps<typeof IconSymbol>['name']} size={22} color={palette.tint} />
-            </View>
+            <LinearGradient
+              colors={palette.gradient ?? [palette.tint, palette.accent]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.quickIconWrap}
+            >
+              <IconSymbol name={action.icon as ComponentProps<typeof IconSymbol>['name']} size={22} color="#ffffff" />
+            </LinearGradient>
             <View style={styles.quickContent}>
               <ThemedText type="subtitle" style={styles.quickTitle}>
                 {action.title}
@@ -364,11 +401,19 @@ function SectionHeader({
   return (
     <View style={styles.sectionHeader}>
       <View style={styles.sectionTitleRow}>
-        <IconSymbol name={icon} size={24} color={palette.tint} />
+        <LinearGradient
+          colors={palette.secondaryGradient ?? [palette.tint, palette.accent]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.sectionIconBadge}
+        >
+          <IconSymbol name={icon} size={18} color="#ffffff" />
+        </LinearGradient>
         <ThemedText type="subtitle" style={styles.sectionTitle}>
           {title}
         </ThemedText>
       </View>
+      <View style={[styles.sectionAccent, { backgroundColor: palette.tint }]} />
       <ThemedText style={styles.sectionCaption}>{caption}</ThemedText>
     </View>
   );
@@ -379,29 +424,44 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 260,
   },
+  heroShell: {
+    borderRadius: 28,
+    padding: 2,
+    marginTop: -32,
+    marginBottom: 16,
+  },
   hero: {
-    paddingTop: 24,
-    paddingBottom: 8,
-    gap: 16,
+    padding: 24,
+    gap: 18,
+    borderRadius: 26,
   },
-  heroBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
+  heroHeaderRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
-  heroBadgeText: {
-    fontWeight: '600',
-    letterSpacing: 0.4,
-    textTransform: 'uppercase',
+  heroCtaBlock: {
+    alignItems: 'flex-end',
+    gap: 12,
+  },
+  heroCtaLabel: {
     fontSize: 12,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    fontWeight: '600',
+  },
+  heroButton: {
+    borderRadius: 999,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  heroButtonLabel: {
+    fontSize: 15,
+    letterSpacing: 0.3,
   },
   heroTitle: {
-    fontSize: 34,
-    lineHeight: 38,
+    fontSize: 36,
+    lineHeight: 40,
   },
   heroSubtitle: {
     fontSize: 16,
@@ -417,10 +477,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 16,
     paddingHorizontal: 18,
-    paddingVertical: 14,
+    paddingVertical: 16,
     flexGrow: 1,
     minWidth: 100,
     gap: 4,
+  },
+  metricPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  metricAccent: {
+    width: 8,
+    height: 32,
+    borderRadius: 999,
   },
   metricValue: {
     fontSize: 24,
@@ -434,18 +504,31 @@ const styles = StyleSheet.create({
   sectionHeader: {
     marginTop: 24,
     marginBottom: 12,
-    gap: 4,
+    gap: 6,
   },
   sectionTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
+  },
+  sectionIconBadge: {
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: 20,
+  },
+  sectionAccent: {
+    width: 36,
+    height: 3,
+    borderRadius: 999,
   },
   sectionCaption: {
     opacity: 0.7,
+    fontSize: 14,
   },
   quickGrid: {
     flexDirection: 'column',
@@ -454,7 +537,7 @@ const styles = StyleSheet.create({
   quickCard: {
     borderWidth: 1,
     borderRadius: 18,
-    padding: 16,
+    padding: 18,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
@@ -462,7 +545,7 @@ const styles = StyleSheet.create({
   quickIconWrap: {
     width: 44,
     height: 44,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
