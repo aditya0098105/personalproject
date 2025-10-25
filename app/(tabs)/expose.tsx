@@ -12,49 +12,49 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 
 const dossierHighlights = [
   {
-    title: 'Layered shell companies feed a single fortune',
+    title: 'USD $4.5B allegedly siphoned',
     detail:
-      'Seven logistics subsidiaries registered in low-tax havens funneled municipal contracts into a private holding company. Each entity signed identical invoices for “strategic foresight consulting,” but only one junior analyst was on payroll.',
-    icon: 'building.2.fill',
+      'U.S. Department of Justice investigators allege more than $4.5 billion was diverted from 1MDB into offshore vehicles linked to Malaysian and Emirati officials between 2009 and 2014.',
+    icon: 'globe.asia.australia.fill',
   },
   {
-    title: 'Public funds diverted through charity partnerships',
+    title: 'Luxuries seized worldwide',
     detail:
-      'Crosswinds Humanity, a philanthropic front, raised $48M for disaster relief. Only 12% reached field programmes—most underwrote Horizon Gala events and luxury travel billed as “donor cultivation experiences.”',
-    icon: 'heart.text.square.fill',
+      'Civil forfeiture cases recovered assets including a $250M superyacht, Beverly Hills mansions, and rare art purchased with misappropriated funds, according to DoJ filings.',
+    icon: 'sailboat.fill',
   },
   {
-    title: 'Whistleblower dossiers corroborate the scheme',
+    title: 'Banks paid record fines',
     detail:
-      'An operations lead leaked 2,300 emails showing executive directives to reclassify campaign donations as “community resilience grants,” unlocking exclusive city concessions.',
-    icon: 'exclamationmark.bubble.fill',
+      'Goldman Sachs agreed to a $2.9B global settlement in 2020 and Malaysia negotiated $3.9B in penalties after prosecutors said bond offerings enabled the scheme.',
+    icon: 'dollarsign.circle.fill',
   },
 ];
 
 const timeline = [
   {
-    year: '2018',
-    headline: 'Awarded SmartPort modernization contract',
+    year: '2009',
+    headline: '1MDB founded under Najib Razak',
     summary:
-      'City of New Avalon selected Horizon Nexus Logistics, chaired by Viktor Halden, to digitize port customs. Procurement board minutes later vanished from the public register.',
+      'Malaysia transformed the Terengganu Investment Authority into 1MDB with Najib as advisory board chair, pledging to spur strategic development projects.',
   },
   {
-    year: '2019',
-    headline: 'Shell network appears overnight',
+    year: '2015',
+    headline: 'Wall Street Journal exposes $700M transfer',
     summary:
-      'Six shell entities registered within 72 hours in Cascadia, Reykjavik, and the Azores. All list Halden’s brother-in-law as the director of record.',
+      'Investigative reporting revealed funds linked to 1MDB were wired into Najib’s personal accounts, prompting domestic protests and official denials.',
   },
   {
-    year: '2021',
-    headline: 'Whistleblowers surface',
+    year: '2016',
+    headline: 'DoJ launches “kleptocracy” suits',
     summary:
-      'Employees leak memos revealing back-dated invoices, falsified compliance reports, and off-ledger payments into Halden’s personal art foundation.',
+      'U.S. authorities filed civil actions to seize $1B in assets, calling it the largest kleptocracy case in DoJ history.',
   },
   {
-    year: '2024',
-    headline: 'Investigative task force unravels the flow',
+    year: '2022',
+    headline: 'Najib begins 12-year prison term',
     summary:
-      'Forensic accountants trace $162M in diverted city funds, sparking emergency hearings and the suspension of the SmartPort initiative.',
+      'Malaysia’s Federal Court upheld Najib’s conviction for abuse of power, criminal breach of trust, and money laundering tied to SRC International, a former 1MDB unit.',
   },
 ];
 
@@ -71,7 +71,7 @@ export default function ExposeScreen() {
       headerImage={
         <Image
           source={{
-            uri: 'https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=1600&q=80',
+            uri: 'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=1600&q=80',
           }}
           style={styles.headerImage}
         />
@@ -85,10 +85,10 @@ export default function ExposeScreen() {
           </ThemedText>
         </View>
         <ThemedText type="title" style={styles.heroTitle}>
-          Horizon Nexus dossier
+          1MDB global money trail
         </ThemedText>
         <ThemedText style={styles.heroSubtitle}>
-          Meet Viktor Halden: the charismatic “infrastructure saviour” whose empire siphoned public renewal funds into a private art vault while citizens waited for promised clean ports.
+          How Malaysia’s sovereign development fund became the centre of a multi-billion-dollar fraud touching Hollywood, Gulf investment funds, and Wall Street banks.
         </ThemedText>
       </ThemedView>
 
@@ -97,10 +97,10 @@ export default function ExposeScreen() {
         style={styles.highlightCard}
       >
         <ThemedText type="subtitle" style={styles.highlightTitle} lightColor="#ffffff" darkColor="#ffffff">
-          “The city’s best-kept secret investment”
+          “The largest kleptocracy case to date”
         </ThemedText>
         <ThemedText style={styles.highlightQuote} lightColor="rgba(255,255,255,0.85)" darkColor="rgba(255,255,255,0.85)">
-          Halden promised automated, carbon-neutral shipping lanes. Instead, our analysis shows 73% of SmartPort funds detoured through Horizon Nexus Consulting, a mailbox office sharing a fax machine with a private gallery.
+          U.S. prosecutors say bonds arranged for 1MDB were immediately rerouted to shell companies controlled by financier Low Taek Jho and allies—funding luxury property, films like “The Wolf of Wall Street,” and political influence campaigns.
         </ThemedText>
       </LinearGradient>
 
@@ -158,7 +158,7 @@ export default function ExposeScreen() {
           What’s next
         </ThemedText>
         <ThemedText style={styles.takeawayBody}>
-          Investigators are preparing restitution orders while port workers vote on a cooperative alternative. We’re crowdsourcing new leads on Halden’s remaining offshore partners—send tips securely via the encrypted newsroom channel.
+          Malaysia continues pursuing Low Taek Jho and other fugitives while auditing recovery of 1MDB-linked assets. Stay alert for U.S. court filings on forfeiture auctions and Malaysia’s ongoing negotiations with international banks.
         </ThemedText>
       </ThemedView>
     </ParallaxScrollView>

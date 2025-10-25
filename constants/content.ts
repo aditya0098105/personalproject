@@ -98,7 +98,7 @@ export const newsBriefs: NewsBrief[] = [
   {
     slug: 'arctic-cable',
     headline: 'Arctic data cable goes live, bringing low-latency internet to circumpolar towns',
-    source: 'Studio Signal',
+    source: 'Timeline Desk',
     time: '2h ago',
     summary:
       'The new fiber corridor spans 7,000 km and was co-funded by an alliance of Inuit nations to prioritize community-owned bandwidth.',
@@ -109,7 +109,7 @@ export const newsBriefs: NewsBrief[] = [
   {
     slug: 'circular-cities',
     headline: 'Ten cities commit to circular construction codes with open procurement data',
-    source: 'Signal Policy Desk',
+    source: 'Timeline Policy Lab',
     time: '4h ago',
     summary:
       'Mayors from Lagos, Helsinki, and Quito will publish all public works tenders with zero-waste requirements starting next quarter.',
@@ -120,7 +120,7 @@ export const newsBriefs: NewsBrief[] = [
   {
     slug: 'coral-engineers',
     headline: 'Robotics labs unveil coral nurseries that grow reefs four times faster',
-    source: 'Science Lens',
+    source: 'Timeline Science Lens',
     time: 'Today',
     summary:
       'Engineers in Jakarta and Honolulu use low-voltage mineral accretion frames to regenerate devastated coral habitats.',
@@ -131,7 +131,7 @@ export const newsBriefs: NewsBrief[] = [
   {
     slug: 'youth-climate-bonds',
     headline: 'Youth-led climate bonds raise $3.2B for coastal defense projects',
-    source: 'Impact Finance Brief',
+    source: 'Timeline Impact Brief',
     time: 'Yesterday',
     summary:
       'Student cooperatives in Manila and Rotterdam co-designed the securities to fund mangrove expansion and early warning systems.',
@@ -143,105 +143,105 @@ export const newsBriefs: NewsBrief[] = [
 
 export const protestDeepDives: ProtestDeepDive[] = [
   {
-    slug: 'education-equity-chile',
-    movement: 'Education Equity Coalition',
-    location: 'Santiago, Chile',
-    status: 'Peaceful sit-ins ongoing',
-    update: 'Government to host national dialogue on tuition reform this Friday.',
-    severity: 0.62,
+    slug: 'reject-finance-bill-kenya',
+    movement: '#RejectFinanceBill protests',
+    location: 'Nairobi, Kenya',
+    status: 'Mobilisations ongoing',
+    update: 'President William Ruto withdrew the 2024 finance bill on 26 June; civic groups now monitor follow-up budget talks.',
+    severity: 0.85,
     summary:
-      'Students, teachers, and parents are occupying public squares to demand tuition caps, rural broadband access, and transparent scholarship funds.',
+      'Youth-led networks and civil society organisations held nationwide marches against new tax increases, citing Finance Bill 2024 provisions on fuel, salaries, and digital transactions. The Kenya National Commission on Human Rights reported at least 39 protest-related deaths.',
     timeline: [
       {
-        date: 'Mon · 08:30',
-        title: 'Citywide teach-ins',
-        detail: 'Over 220 classrooms streamed digital rights seminars with union lawyers and civic technologists.',
+        date: '18 Jun 2024',
+        title: '“Occupy Parliament” begins',
+        detail: 'Thousands gathered in Nairobi, Mombasa, and Kisumu to oppose the finance bill as police deployed tear gas and water cannons.',
       },
       {
-        date: 'Wed · 19:00',
-        title: 'Ministry roundtable',
-        detail: 'Education minister invites coalition delegates and opposition parties to negotiate long-term funding commitments.',
+        date: '25 Jun 2024',
+        title: 'Parliament stormed',
+        detail: 'Demonstrators briefly entered the National Assembly before security forces opened fire, leaving at least 23 dead that day according to Reuters.',
       },
       {
-        date: 'Fri · 12:00',
-        title: 'National dialogue',
-        detail: 'Live broadcast of policy workshop featuring regional governors and student-led policy prototypes.',
+        date: '26 Jun 2024',
+        title: 'Finance bill withdrawn',
+        detail: 'President Ruto announced he would not sign the bill and would consult on alternative fiscal measures after the unrest.',
       },
     ],
     links: [
-      { label: 'Coalition charter', url: 'https://www.youtube.com/watch?v=ZoSXg0a5T-4' },
-      { label: 'Community livestream', url: 'https://www.youtube.com/watch?v=66tu4G3oGxQ' },
+      { label: 'Reuters live updates', url: 'https://www.reuters.com/world/africa/kenya-finance-bill-protests-2024-06-26/' },
+      { label: 'Amnesty International statement', url: 'https://www.amnesty.org/en/latest/news/2024/06/kenya-government-must-end-violent-crackdown-on-protesters/' },
     ],
   },
   {
-    slug: 'future-of-media-poland',
-    movement: 'Future of Media Alliance',
-    location: 'Warsaw, Poland',
-    status: 'Journalist march planned',
-    update: 'Independent press clubs request EU mediation on new licensing bill.',
-    severity: 0.48,
+    slug: 'argentina-universities-funding',
+    movement: 'Universities defend public funding',
+    location: 'Buenos Aires, Argentina',
+    status: 'Mass march concluded',
+    update: 'Rectors entered negotiations with the Milei administration after the 23 April demonstrations over frozen budgets.',
+    severity: 0.68,
     summary:
-      'Media outlets and civil society groups coordinate a march to defend independent broadcasting licenses and whistleblower protections.',
+      'Students, faculty, and alumni filled Buenos Aires and provincial capitals demanding updated operating funds as inflation surged above 270% year-on-year.',
     timeline: [
       {
-        date: 'Tue · 10:00',
-        title: 'Press freedom forum',
-        detail: 'Regional correspondents share legal resources for newsroom safety and anti-surveillance protocols.',
+        date: '10 Apr 2024',
+        title: 'Rectors warn about shutdowns',
+        detail: 'The National Inter-University Council said campuses could not pay utility bills beyond May without revised transfers.',
       },
       {
-        date: 'Thu · 17:00',
-        title: 'March rehearsal',
-        detail: 'Organisers walk the planned downtown route to map police liaison checkpoints and accessibility ramps.',
+        date: '23 Apr 2024',
+        title: 'Federal march fills Plaza de Mayo',
+        detail: 'Hundreds of thousands rallied in Buenos Aires; Reuters reported 200,000 participants while organisers cited more than half a million nationwide.',
       },
       {
-        date: 'Sat · 14:00',
-        title: 'Alliance march',
-        detail: 'Live reporting teams partner with citizen journalists for real-time documentation.',
+        date: '24 Apr 2024',
+        title: 'Government agrees to talks',
+        detail: 'The education ministry announced working groups on budget adjustments and energy subsidies after the protest.',
       },
     ],
     links: [
-      { label: 'Media safety toolkit', url: 'https://www.youtube.com/watch?v=l0U7SxXHkPY' },
-      { label: 'EU rights explainer', url: 'https://www.youtube.com/watch?v=9Auq9mYxFEE' },
+      { label: 'Reuters coverage', url: 'https://www.reuters.com/world/americas/hundreds-thousands-protest-argentina-over-university-budget-cuts-2024-04-23/' },
+      { label: 'New York Times report', url: 'https://www.nytimes.com/2024/04/23/world/americas/argentina-university-protests.html' },
     ],
   },
   {
-    slug: 'blue-air-nigeria',
-    movement: 'Blue Air Coalition',
-    location: 'Lagos, Nigeria',
-    status: 'Evening demonstrations',
-    update: 'City pledges transparent pollution data release before weekend.',
-    severity: 0.71,
+    slug: 'india-farmers-2024',
+    movement: 'Delhi Chalo farmers march',
+    location: 'Punjab–Haryana border, India',
+    status: 'Negotiations stalled',
+    update: 'Farm unions paused their advance toward Delhi on 21 February pending a legal guarantee on minimum support prices.',
+    severity: 0.72,
     summary:
-      'Neighbourhood clean-air networks are publishing DIY sensor data to demand immediate regulation of diesel generators and port traffic.',
+      'Thousands of farmers from Punjab and Haryana marched toward the capital seeking legally guaranteed crop prices, debt relief, and pension schemes. Police used drones to drop tear gas as protesters camped at border checkpoints.',
     timeline: [
       {
-        date: 'Mon · 06:00',
-        title: 'Sensor calibration',
-        detail: 'Volunteers calibrate 500+ low-cost PM2.5 monitors across the Lagos Lagoon district.',
+        date: '13 Feb 2024',
+        title: 'March begins',
+        detail: 'Farmers attempted to cross barricades at the Shambhu border; authorities fired tear gas shells and closed key highways.',
       },
       {
-        date: 'Thu · 20:00',
-        title: 'Night market canvass',
-        detail: 'Health workers staff pop-up clinics to provide respiratory screenings and collect impact testimonies.',
+        date: '18 Feb 2024',
+        title: 'Fourth round of talks',
+        detail: 'Union ministers offered contracts for five crops but no blanket MSP law, leading unions to continue their agitation.',
       },
       {
-        date: 'Sun · 16:30',
-        title: 'City hall forum',
-        detail: 'Coalition negotiates with port authorities on emission caps tied to community-owned solar microgrids.',
+        date: '21 Feb 2024',
+        title: 'Pause announced',
+        detail: 'Farm leaders halted the “Delhi Chalo” march for two days while awaiting a written proposal, keeping encampments in place.',
       },
     ],
     links: [
-      { label: 'Air quality dashboard', url: 'https://www.youtube.com/watch?v=HJa33J30qQA' },
-      { label: 'Health impact report', url: 'https://www.youtube.com/watch?v=mcixldqDIEQ' },
+      { label: 'Al Jazeera explainer', url: 'https://www.aljazeera.com/news/2024/2/21/india-farmers-protest-explained' },
+      { label: 'BBC timeline', url: 'https://www.bbc.com/news/world-asia-india-68294657' },
     ],
   },
 ];
 
 export const governanceSpotlight: GovernanceSpotlight[] = [
-  { country: 'Finland', score: 92, change: +2 },
-  { country: 'New Zealand', score: 89, change: +3 },
-  { country: 'Canada', score: 84, change: +1 },
-  { country: 'Costa Rica', score: 81, change: 0 },
+  { country: 'Denmark', score: 90, change: 0 },
+  { country: 'Singapore', score: 83, change: 0 },
+  { country: 'Canada', score: 74, change: 0 },
+  { country: 'Seychelles', score: 71, change: 1 },
 ];
 
 export const protestWatchHighlights = protestDeepDives.map(({ movement, location, status, update, severity, slug }) => ({
