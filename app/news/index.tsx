@@ -11,6 +11,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+import { XMLParser } from 'fast-xml-parser';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -26,12 +27,16 @@ type Article = {
   author?: string | null;
   description?: string | null;
   content?: string | null;
+  publishedAt?: string | null;
   source?: {
     name: string;
   };
 };
 
-const NEWS_ENDPOINT = 'https://saurav.tech/NewsAPI/top-headlines/category/general/in.json';
+const GUARDIAN_API_KEY = process.env.EXPO_PUBLIC_GUARDIAN_API_KEY ?? 'test';
+const GUARDIAN_ENDPOINT =
+  `https://content.guardianapis.com/search?section=news&order-by=newest&show-fields=thumbnail,trailText,byline,bodyText&api-key=${GUARDIAN_API_KEY}`;
+const BBC_RSS_URL = 'https://feeds.bbci.co.uk/news/rss.xml';
 const heroTopics = ['Impact', 'Policy', 'Climate', 'Cities'];
 
 export default function NewsroomFeedScreen() {
@@ -54,52 +59,133 @@ export default function NewsroomFeedScreen() {
       'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80',
     [],
   );
+  const xmlParser = useMemo(
+    () =>
+      new XMLParser({
+        ignoreAttributes: false,
+        removeNSPrefix: true,
+        attributeNamePrefix: '',
+        textNodeName: 'text',
+        trimValues: true,
+      }),
+    [],
+  );
 
-  const parseArticles = useCallback((payload: unknown): Article[] => {
-    if (payload && typeof payload === 'object') {
-      if ('articles' in payload && Array.isArray((payload as { articles: unknown }).articles)) {
-        return (payload as { articles: any[] }).articles
-          .map((item) => ({
-            title: typeof item?.title === 'string' ? item.title : 'Untitled',
-            url: typeof item?.url === 'string' ? item.url : '',
-            urlToImage: typeof item?.urlToImage === 'string' ? item.urlToImage : null,
-            author: typeof item?.author === 'string' ? item.author : null,
-            description: typeof item?.description === 'string' ? item.description : null,
-            content: typeof item?.content === 'string' ? item.content : null,
-            source: {
-              name:
-                typeof item?.source?.name === 'string' && item.source.name.trim().length > 0
-                  ? item.source.name
-                  : 'Unknown source',
-            },
-          }))
-          .filter((item) => item.url);
-      }
-
-      if ('data' in payload && Array.isArray((payload as { data: any[] }).data)) {
-        return (payload as { data: any[] }).data
-          .map((item) => ({
-            title: item.title ?? item.content ?? 'Untitled',
-            url: item.readMoreUrl ?? item.url ?? '',
-            urlToImage: item.imageUrl ?? null,
-            author: typeof item?.author === 'string' ? item.author : null,
-            description:
-              typeof item?.description === 'string'
-                ? item.description
-                : typeof item?.content === 'string'
-                  ? item.content
-                  : null,
-            content: typeof item?.content === 'string' ? item.content : null,
-            source: {
-              name: item.author ?? 'Inshorts',
-            },
-          }))
-          .filter((item) => item.url);
-      }
+  const stripHtml = useCallback((value?: string | null) => {
+    if (!value) {
+      return null;
     }
 
-    return [];
+    const normalized = value
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/&amp;/gi, '&')
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;/gi, "'")
+      .replace(/&apos;/gi, "'")
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    return normalized.length > 0 ? normalized : null;
   }, []);
+
+  const fetchGuardianArticles = useCallback(async (): Promise<Article[]> => {
+    const response = await fetch(GUARDIAN_ENDPOINT, {
+      headers: {
+        'Cache-Control': 'no-cache',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Unable to reach The Guardian headlines.');
+    }
+
+    const payload = await response.json();
+    const results = payload?.response?.results;
+    if (!Array.isArray(results)) {
+      return [];
+    }
+
+    return results
+      .map((item: any) => {
+        const fields = item?.fields ?? {};
+        const description = typeof fields?.trailText === 'string' ? stripHtml(fields.trailText) : null;
+        const body = typeof fields?.bodyText === 'string' ? stripHtml(fields.bodyText) : null;
+
+        return {
+          title: typeof item?.webTitle === 'string' ? item.webTitle : 'Untitled',
+          url: typeof item?.webUrl === 'string' ? item.webUrl : '',
+          urlToImage: typeof fields?.thumbnail === 'string' ? fields.thumbnail : null,
+          author: typeof fields?.byline === 'string' ? fields.byline : null,
+          description,
+          content: body ?? description,
+          publishedAt: typeof item?.webPublicationDate === 'string' ? item.webPublicationDate : null,
+          source: {
+            name: 'The Guardian',
+          },
+        } satisfies Article;
+      })
+      .filter((article) => article.url);
+  }, [stripHtml]);
+
+  const fetchBBCArticles = useCallback(async (): Promise<Article[]> => {
+    const response = await fetch(BBC_RSS_URL, {
+      headers: {
+        'Cache-Control': 'no-cache',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Unable to reach BBC News.');
+    }
+
+    const xml = await response.text();
+    if (!xml) {
+      return [];
+    }
+
+    const parsed = xmlParser.parse(xml);
+    const itemsRaw = parsed?.rss?.channel?.item;
+    const items = Array.isArray(itemsRaw) ? itemsRaw : itemsRaw ? [itemsRaw] : [];
+
+    return items
+      .map((item: any) => {
+        const imageCandidate =
+          typeof item?.thumbnail?.url === 'string'
+            ? item.thumbnail.url
+            : typeof item?.content?.url === 'string'
+              ? item.content.url
+              : typeof item?.['media:thumbnail']?.url === 'string'
+                ? item['media:thumbnail'].url
+                : typeof item?.['media:content']?.url === 'string'
+                  ? item['media:content'].url
+                  : null;
+
+        const description =
+          typeof item?.description === 'string' ? stripHtml(item.description) : null;
+        const cleanedTitle = typeof item?.title === 'string' ? stripHtml(item.title) : null;
+        const authorCandidate =
+          typeof item?.creator === 'string'
+            ? item.creator
+            : typeof item?.['dc:creator'] === 'string'
+              ? item['dc:creator']
+              : null;
+
+        return {
+          title: cleanedTitle ?? 'Untitled',
+          url: typeof item?.link === 'string' ? item.link : '',
+          urlToImage: imageCandidate,
+          author: authorCandidate,
+          description,
+          content: description,
+          publishedAt: typeof item?.pubDate === 'string' ? item.pubDate : null,
+          source: {
+            name: 'BBC News',
+          },
+        } satisfies Article;
+      })
+      .filter((article) => article.url);
+  }, [stripHtml, xmlParser]);
 
   const fetchArticles = useCallback(async (isRefresh = false) => {
     try {
@@ -111,22 +197,55 @@ export default function NewsroomFeedScreen() {
         setLoading(true);
       }
 
-      const response = await fetch(NEWS_ENDPOINT, {
-        headers: {
-          'Cache-Control': 'no-cache',
-        },
-      });
-      if (!response.ok) {
-        throw new Error('Unable to reach the headlines service.');
+      const [guardianResult, bbcResult] = await Promise.allSettled([
+        fetchGuardianArticles(),
+        fetchBBCArticles(),
+      ]);
+
+      const aggregated: Article[] = [];
+      const issues: string[] = [];
+
+      if (guardianResult.status === 'fulfilled') {
+        aggregated.push(...guardianResult.value);
+        if (!guardianResult.value.length) {
+          issues.push('No stories available from The Guardian at the moment.');
+        }
+      } else {
+        issues.push('The Guardian feed is temporarily unavailable.');
       }
 
-      const payload = await response.json();
-      const normalized = parseArticles(payload);
-      if (!normalized.length) {
-        throw new Error('No articles available right now.');
+      if (bbcResult.status === 'fulfilled') {
+        aggregated.push(...bbcResult.value);
+        if (!bbcResult.value.length) {
+          issues.push('No stories available from BBC News at the moment.');
+        }
+      } else {
+        issues.push('BBC News feed is temporarily unavailable.');
       }
 
-      setArticles(normalized);
+      const uniqueArticles = Array.from(
+        new Map(
+          aggregated.map((article) => [article.url, article] as const),
+        ).values(),
+      );
+
+      const parseTime = (value?: string | null) => {
+        if (!value) {
+          return 0;
+        }
+
+        const timestamp = Date.parse(value);
+        return Number.isNaN(timestamp) ? 0 : timestamp;
+      };
+
+      uniqueArticles.sort((a, b) => parseTime(b.publishedAt) - parseTime(a.publishedAt));
+
+      if (!uniqueArticles.length) {
+        throw new Error('No live headlines available right now.');
+      }
+
+      setArticles(uniqueArticles);
+      setError(issues.length ? issues.join(' ') : null);
     } catch (fetchError) {
       console.error(fetchError);
       setError(fetchError instanceof Error ? fetchError.message : 'Something went wrong.');
@@ -136,7 +255,7 @@ export default function NewsroomFeedScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [parseArticles]);
+  }, [fetchBBCArticles, fetchGuardianArticles]);
 
   useEffect(() => {
     fetchArticles(false);
@@ -237,7 +356,8 @@ export default function NewsroomFeedScreen() {
               Top headlines
             </ThemedText>
             <ThemedText style={styles.heroCardSubtitle} lightColor="rgba(255,255,255,0.85)" darkColor="rgba(255,255,255,0.85)">
-              Stay updated with the latest stories across India. Pull down anytime for a fresh intelligence sweep.
+              Stay updated with the latest reporting from The Guardian and BBC News. Pull down anytime for a fresh
+              intelligence sweep.
             </ThemedText>
             <View style={styles.heroChipRow}>
               {heroTopics.map((topic) => (
@@ -282,7 +402,7 @@ export default function NewsroomFeedScreen() {
         <ThemedText style={styles.footerText}>
           {usingFallback
             ? 'Showing cached headlines while we reconnect to live sources.'
-            : 'Powered by NewsAPI.org'}
+            : 'Powered by The Guardian Open Platform & BBC News'}
         </ThemedText>
       </View>
     ),
