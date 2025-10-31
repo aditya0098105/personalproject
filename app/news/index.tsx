@@ -4,10 +4,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import {
   ActivityIndicator,
-  FlatList,
-  ListRenderItem,
   Pressable,
   RefreshControl,
+  SectionList,
+  SectionListRenderItem,
   StyleSheet,
   View,
 } from 'react-native';
@@ -20,7 +20,9 @@ import { FALLBACK_ARTICLES } from '@/constants/news-fallback';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
-type Article = {
+type Category = 'Politics' | 'Science' | 'Climate' | 'Entertainment' | 'Art' | 'Technology';
+
+type ArticleBase = {
   title: string;
   url: string;
   urlToImage: string | null;
@@ -31,6 +33,99 @@ type Article = {
   source?: {
     name: string;
   };
+};
+
+type Article = ArticleBase & {
+  category: Category;
+};
+
+type ArticleSection = {
+  title: Category;
+  data: Article[];
+};
+
+const CATEGORY_ORDER: Category[] = [
+  'Politics',
+  'Science',
+  'Climate',
+  'Entertainment',
+  'Art',
+  'Technology',
+];
+
+const CATEGORY_KEYWORDS: Record<Category, string[]> = {
+  Politics: [
+    'election',
+    'policy',
+    'government',
+    'minister',
+    'president',
+    'parliament',
+    'congress',
+    'senate',
+    'cabinet',
+    'politic',
+    'diplomat',
+  ],
+  Science: [
+    'science',
+    'research',
+    'study',
+    'scientist',
+    'laboratory',
+    'medical',
+    'health',
+    'space',
+    'astronomy',
+    'nasa',
+  ],
+  Climate: [
+    'climate',
+    'emission',
+    'carbon',
+    'environment',
+    'pollution',
+    'warming',
+    'sustainability',
+    'green',
+    'hydrogen',
+    'renewable',
+  ],
+  Entertainment: [
+    'entertainment',
+    'film',
+    'movie',
+    'music',
+    'celebrity',
+    'show',
+    'series',
+    'hollywood',
+    'bollywood',
+    'festival',
+  ],
+  Art: [
+    'art',
+    'artist',
+    'gallery',
+    'museum',
+    'painting',
+    'sculpture',
+    'exhibit',
+    'culture',
+    'literature',
+  ],
+  Technology: [
+    'technology',
+    'tech',
+    'startup',
+    'software',
+    'digital',
+    'innovation',
+    'ai',
+    'robot',
+    'cyber',
+    'device',
+  ],
 };
 
 const GUARDIAN_API_KEY = process.env.EXPO_PUBLIC_GUARDIAN_API_KEY ?? 'test';
@@ -50,6 +145,20 @@ export default function NewsroomFeedScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [usingFallback, setUsingFallback] = useState(false);
+
+  const categorizeArticle = useCallback((article: ArticleBase): Category => {
+    const text = `${article.title} ${article.description ?? ''} ${article.content ?? ''} ${article.source?.name ?? ''}`
+      .toLowerCase();
+
+    for (const category of CATEGORY_ORDER) {
+      const keywords = CATEGORY_KEYWORDS[category];
+      if (keywords.some((keyword) => text.includes(keyword))) {
+        return category;
+      }
+    }
+
+    return 'Politics';
+  }, []);
 
   const cardSurface = palette.card ?? (isDark ? 'rgba(15, 23, 42, 0.78)' : '#ffffff');
   const borderSubtle = palette.stroke ?? (isDark ? 'rgba(148, 163, 184, 0.24)' : '#e2e8f0');
@@ -112,7 +221,7 @@ export default function NewsroomFeedScreen() {
         const description = typeof fields?.trailText === 'string' ? stripHtml(fields.trailText) : null;
         const body = typeof fields?.bodyText === 'string' ? stripHtml(fields.bodyText) : null;
 
-        return {
+        const baseArticle: ArticleBase = {
           title: typeof item?.webTitle === 'string' ? item.webTitle : 'Untitled',
           url: typeof item?.webUrl === 'string' ? item.webUrl : '',
           urlToImage: typeof fields?.thumbnail === 'string' ? fields.thumbnail : null,
@@ -123,10 +232,12 @@ export default function NewsroomFeedScreen() {
           source: {
             name: 'The Guardian',
           },
-        } satisfies Article;
+        };
+
+        return { ...baseArticle, category: categorizeArticle(baseArticle) } satisfies Article;
       })
       .filter((article) => article.url);
-  }, [stripHtml]);
+  }, [categorizeArticle, stripHtml]);
 
   const fetchBBCArticles = useCallback(async (): Promise<Article[]> => {
     const response = await fetch(BBC_RSS_URL, {
@@ -171,7 +282,7 @@ export default function NewsroomFeedScreen() {
               ? item['dc:creator']
               : null;
 
-        return {
+        const baseArticle: ArticleBase = {
           title: cleanedTitle ?? 'Untitled',
           url: typeof item?.link === 'string' ? item.link : '',
           urlToImage: imageCandidate,
@@ -182,10 +293,12 @@ export default function NewsroomFeedScreen() {
           source: {
             name: 'BBC News',
           },
-        } satisfies Article;
+        };
+
+        return { ...baseArticle, category: categorizeArticle(baseArticle) } satisfies Article;
       })
       .filter((article) => article.url);
-  }, [stripHtml, xmlParser]);
+  }, [categorizeArticle, stripHtml, xmlParser]);
 
   const fetchArticles = useCallback(async (isRefresh = false) => {
     try {
@@ -249,24 +362,34 @@ export default function NewsroomFeedScreen() {
     } catch (fetchError) {
       console.error(fetchError);
       setError(fetchError instanceof Error ? fetchError.message : 'Something went wrong.');
-      setArticles([...FALLBACK_ARTICLES]);
+      setArticles(
+        FALLBACK_ARTICLES.map((article) => {
+          const baseArticle: ArticleBase = {
+            ...article,
+          };
+
+          return { ...baseArticle, category: categorizeArticle(baseArticle) } satisfies Article;
+        }),
+      );
       setUsingFallback(true);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [fetchBBCArticles, fetchGuardianArticles]);
+  }, [categorizeArticle, fetchBBCArticles, fetchGuardianArticles]);
 
   useEffect(() => {
     fetchArticles(false);
   }, [fetchArticles]);
 
   const handleNavigate = useCallback(
-    (article: Article, index: number) => {
+    (article: Article) => {
+      const articleIndex = articles.findIndex((candidate) => candidate.url === article.url);
+
       router.push({
         pathname: '/news/[articleId]',
         params: {
-          articleId: String(index),
+          articleId: String(articleIndex >= 0 ? articleIndex : Date.now()),
           title: article.title,
           image: article.urlToImage ?? '',
           author: article.author ?? '',
@@ -277,20 +400,20 @@ export default function NewsroomFeedScreen() {
         },
       });
     },
-    [router],
+    [articles, router],
   );
 
   const handleRefresh = useCallback(() => {
     fetchArticles(true);
   }, [fetchArticles]);
 
-  const renderArticle: ListRenderItem<Article> = useCallback(
-    ({ item, index }) => {
+  const renderArticle: SectionListRenderItem<Article> = useCallback(
+    ({ item }) => {
       const imageSource = item.urlToImage ? { uri: item.urlToImage } : { uri: placeholderImage };
 
       return (
         <Pressable
-          onPress={() => handleNavigate(item, index)}
+          onPress={() => handleNavigate(item)}
           style={[styles.card, { backgroundColor: cardSurface, borderColor: borderSubtle }]}
         >
           <View style={styles.cardImageWrap}>
@@ -409,6 +532,26 @@ export default function NewsroomFeedScreen() {
     [palette.tint, usingFallback],
   );
 
+  const sections = useMemo<ArticleSection[]>(
+    () =>
+      CATEGORY_ORDER.map((category) => ({
+        title: category,
+        data: articles.filter((article) => article.category === category),
+      })).filter((section) => section.data.length > 0),
+    [articles],
+  );
+
+  const renderSectionHeader = useCallback(
+    ({ section }: { section: ArticleSection }) => (
+      <View style={styles.sectionHeader}>
+        <ThemedText type="subtitle" style={styles.sectionTitle}>
+          {section.title}
+        </ThemedText>
+      </View>
+    ),
+    [],
+  );
+
   if (loading && !refreshing && articles.length === 0) {
     return (
       <ThemedView style={styles.centered}>
@@ -433,12 +576,14 @@ export default function NewsroomFeedScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <FlatList
-        data={articles}
+      <SectionList<Article, ArticleSection>
+        sections={sections}
         keyExtractor={(item, index) => `${item.url}-${index}`}
         renderItem={renderArticle}
+        renderSectionHeader={renderSectionHeader}
         contentContainerStyle={styles.listContent}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
+        SectionSeparatorComponent={() => <View style={styles.sectionSeparator} />}
         ListHeaderComponent={listHeader}
         ListFooterComponent={listFooter}
         refreshControl={
@@ -483,6 +628,14 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 20,
+  },
+  sectionHeader: {
+    marginTop: 16,
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: '700',
   },
   heroCard: {
     borderRadius: 26,
@@ -611,6 +764,9 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 20,
+  },
+  sectionSeparator: {
+    height: 28,
   },
   footer: {
     marginTop: 24,
