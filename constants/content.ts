@@ -92,6 +92,15 @@ export const documentaryLibrary: Documentary[] = [
     url: 'https://youtu.be/OboT09uRw6M?si=aHibvvgTcFHT_c9G',
     tags: ['urban innovation', 'energy'],
   },
+  {
+    slug: 'oceans',
+    title: 'Oceans',
+    duration: 'Local media',
+    summary: 'Offline documentary stored on the user device for direct playback.',
+    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80',
+    url: 'C:\\Users\\adity\\Downloads',
+    tags: ['oceans', 'local library'],
+  },
 ];
 
 export const newsBriefs: NewsBrief[] = [
