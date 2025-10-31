@@ -1,9 +1,10 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { Image } from 'expo-image';
-import * as WebBrowser from 'expo-web-browser';
+import { Video, ResizeMode } from 'expo-av';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Animated, Easing, Linking, Pressable, StyleSheet, View } from 'react-native';
+import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
@@ -12,38 +13,57 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { documentaryLibrary } from '@/constants/content';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { isStreamingUrl, resolveVideoSource } from '@/utils/media';
 
 export default function DocumentaryLibraryScreen() {
+  const params = useLocalSearchParams<{ slug?: string }>();
   const colorScheme = useColorScheme();
   const palette = Colors[colorScheme ?? 'light'];
   const cardSurface = colorScheme === 'dark' ? 'rgba(15, 23, 42, 0.7)' : '#ffffff';
   const tagSurface = colorScheme === 'dark' ? 'rgba(148, 163, 184, 0.18)' : 'rgba(15, 118, 110, 0.12)';
   const borderSubtle = colorScheme === 'dark' ? 'rgba(148, 163, 184, 0.24)' : '#e2e8f0';
   const cardAnimations = useRef(documentaryLibrary.map(() => new Animated.Value(0))).current;
+  const router = useRouter();
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(() => {
+    if (typeof params.slug === 'string') {
+      return params.slug;
+    }
 
-  const handleOpenLink = useCallback(async (url: string) => {
-    try {
-      const supportingBrowsers = await WebBrowser.getCustomTabsSupportingBrowsersAsync();
-      const browserPackage =
-        supportingBrowsers?.preferredBrowserPackage ??
-        supportingBrowsers?.defaultBrowserPackage ??
-        supportingBrowsers?.browserPackages?.[0];
+    return documentaryLibrary[0]?.slug ?? null;
+  });
+  const videoRef = useRef<Video | null>(null);
 
-      if (browserPackage) {
-        await WebBrowser.openBrowserAsync(url, { browserPackage });
-      } else {
-        await WebBrowser.openBrowserAsync(url);
-      }
-    } catch (error) {
-      const canOpenLink = await Linking.canOpenURL(url);
+  useEffect(() => {
+    if (typeof params.slug === 'string' && params.slug !== selectedSlug) {
+      const match = documentaryLibrary.find((doc) => doc.slug === params.slug);
 
-      if (canOpenLink) {
-        await Linking.openURL(url);
-      } else {
-        console.warn(`Unable to open URL: ${url}`, error);
+      if (match) {
+        setSelectedSlug(match.slug);
       }
     }
-  }, []);
+  }, [params.slug, selectedSlug]);
+
+  useEffect(() => {
+    if (!selectedSlug && documentaryLibrary.length > 0) {
+      setSelectedSlug(documentaryLibrary[0].slug);
+    }
+  }, [selectedSlug]);
+
+  const selectedDocument = useMemo(
+    () => documentaryLibrary.find((doc) => doc.slug === selectedSlug) ?? null,
+    [selectedSlug],
+  );
+
+  const videoSource = useMemo(() => resolveVideoSource(selectedDocument?.url), [selectedDocument?.url]);
+  const isStreaming = isStreamingUrl(selectedDocument?.url);
+
+  const handleSelectDocument = useCallback(
+    (slug: string) => {
+      setSelectedSlug(slug);
+      router.setParams({ slug });
+    },
+    [router],
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -138,6 +158,43 @@ export default function DocumentaryLibraryScreen() {
         </ThemedView>
       </ThemedView>
 
+      <ThemedView
+        lightColor="#f8fafc"
+        darkColor="rgba(15, 23, 42, 0.55)"
+        style={[styles.viewerSection, { borderColor: borderSubtle }]}
+      >
+        <ThemedText type="subtitle" style={styles.viewerHeading}>
+          {selectedDocument ? `Now playing: ${selectedDocument.title}` : 'Select a documentary to play'}
+        </ThemedText>
+        {videoSource ? (
+          <View style={styles.videoWrapper}>
+            <Video
+              key={selectedDocument?.slug ?? 'video-player'}
+              ref={(ref) => {
+                videoRef.current = ref;
+              }}
+              style={styles.video}
+              source={videoSource}
+              resizeMode={ResizeMode.CONTAIN}
+              useNativeControls
+              shouldPlay={false}
+            />
+          </View>
+        ) : (
+          <ThemedText style={styles.viewerPlaceholder}>
+            Add a video URL to this documentary to watch it without leaving the app.
+          </ThemedText>
+        )}
+        {selectedDocument && (
+          <ThemedText style={styles.viewerSummary}>{selectedDocument.summary}</ThemedText>
+        )}
+        {selectedDocument && videoSource && (
+          <ThemedText style={styles.viewerMeta}>
+            {isStreaming ? 'Streaming directly from source.' : 'Playing from local library path.'}
+          </ThemedText>
+        )}
+      </ThemedView>
+
       {documentaryLibrary.map((doc, index) => (
         <Animated.View
           key={doc.slug}
@@ -154,12 +211,13 @@ export default function DocumentaryLibraryScreen() {
           ]}
         >
           <Pressable
-            onPress={() => handleOpenLink(doc.url)}
+            onPress={() => handleSelectDocument(doc.slug)}
             android_ripple={{ color: palette.tint, borderless: false }}
             style={({ pressed }) => [
               styles.card,
               colorScheme === 'dark' ? styles.cardShadowDark : styles.cardShadowLight,
               { backgroundColor: cardSurface, borderColor: borderSubtle },
+              selectedDocument?.slug === doc.slug && { borderColor: palette.tint },
               pressed && styles.cardPressed,
             ]}
           >
@@ -205,6 +263,46 @@ export default function DocumentaryLibraryScreen() {
 }
 
 const styles = StyleSheet.create({
+  viewerSection: {
+    marginHorizontal: 20,
+    marginBottom: 24,
+    padding: 20,
+    borderRadius: 24,
+    borderWidth: 1,
+    gap: 16,
+    alignItems: 'center',
+  },
+  viewerHeading: {
+    fontSize: 22,
+    lineHeight: 28,
+    alignSelf: 'flex-start',
+  },
+  videoWrapper: {
+    width: '100%',
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: '#000000',
+  },
+  video: {
+    width: '100%',
+    aspectRatio: 16 / 9,
+  },
+  viewerPlaceholder: {
+    fontSize: 16,
+    lineHeight: 24,
+    opacity: 0.85,
+  },
+  viewerMeta: {
+    fontSize: 14,
+    opacity: 0.7,
+    alignSelf: 'flex-start',
+  },
+  viewerSummary: {
+    fontSize: 15,
+    lineHeight: 22,
+    opacity: 0.85,
+    alignSelf: 'flex-start',
+  },
   heroContainer: {
     flex: 1,
     justifyContent: 'flex-end',
