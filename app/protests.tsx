@@ -1,7 +1,5 @@
-import { useCallback } from 'react';
 import { Image } from 'expo-image';
-import * as WebBrowser from 'expo-web-browser';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
@@ -25,10 +23,6 @@ export default function ProtestDetailScreen() {
   const cardSurface = colorScheme === 'dark' ? 'rgba(15, 23, 42, 0.7)' : '#ffffff';
   const borderSubtle = colorScheme === 'dark' ? 'rgba(148, 163, 184, 0.24)' : '#e2e8f0';
   const highlightSurface = colorScheme === 'dark' ? 'rgba(148, 163, 184, 0.08)' : 'rgba(10, 126, 164, 0.12)';
-
-  const handleOpen = useCallback(async (url: string) => {
-    await WebBrowser.openBrowserAsync(url);
-  }, []);
 
   return (
     <ParallaxScrollView
@@ -109,16 +103,17 @@ export default function ProtestDetailScreen() {
           </View>
           <View style={styles.linkList}>
             {protest.links.map((link) => (
-              <Pressable
-                key={link.label}
-                onPress={() => handleOpen(link.url)}
-                style={[styles.linkRow, { borderColor: borderSubtle }]}
-              >
-                <ThemedText type="defaultSemiBold" style={[styles.linkLabel, { color: palette.tint }]}>
-                  {link.label}
-                </ThemedText>
-                <IconSymbol name="arrow.up.right" size={16} color={palette.tint} />
-              </Pressable>
+              <View key={link.label} style={[styles.linkRow, { borderColor: borderSubtle }]}>
+                <View style={styles.linkInfo}>
+                  <ThemedText type="defaultSemiBold" style={[styles.linkLabel, { color: palette.tint }]}>
+                    {link.label}
+                  </ThemedText>
+                  <ThemedText selectable style={styles.linkUrl}>
+                    {link.url}
+                  </ThemedText>
+                </View>
+                <IconSymbol name="doc.on.doc" size={16} color={palette.tint} />
+              </View>
             ))}
           </View>
         </ThemedView>
@@ -252,5 +247,14 @@ const styles = StyleSheet.create({
   },
   linkLabel: {
     fontSize: 15,
+  },
+  linkInfo: {
+    flex: 1,
+    marginRight: 12,
+    gap: 4,
+  },
+  linkUrl: {
+    fontSize: 13,
+    opacity: 0.75,
   },
 });

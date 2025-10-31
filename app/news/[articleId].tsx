@@ -1,13 +1,12 @@
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Video, ResizeMode } from 'expo-av';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { isStreamingUrl, resolveVideoSource } from '@/utils/media';
 
 type ArticleSearchParams = {
   articleId?: string;
@@ -22,8 +21,6 @@ type ArticleSearchParams = {
 
 export default function ArticleDetailsScreen() {
   const params = useLocalSearchParams<ArticleSearchParams>();
-  const colorScheme = useColorScheme();
-  const palette = Colors[colorScheme ?? 'light'];
 
   const placeholderImage = useMemo(
     () =>
@@ -79,13 +76,8 @@ export default function ArticleDetailsScreen() {
     return 'Article';
   }, [params.source]);
 
-  const handleReadMore = useCallback(() => {
-    if (typeof params.url === 'string' && params.url.trim().length > 0) {
-      WebBrowser.openBrowserAsync(params.url);
-    }
-  }, [params.url]);
-
-  const canOpenOriginal = typeof params.url === 'string' && params.url.trim().length > 0;
+  const videoSource = useMemo(() => resolveVideoSource(params.url), [params.url]);
+  const isStreaming = isStreamingUrl(params.url);
 
   return (
     <ThemedView style={styles.container}>
@@ -105,17 +97,27 @@ export default function ArticleDetailsScreen() {
           )}
           <ThemedText style={styles.description}>{articleBody}</ThemedText>
         </View>
+        {videoSource && (
+          <View style={styles.videoSection}>
+            <ThemedText type="subtitle" style={styles.videoHeading}>
+              Watch the briefing
+            </ThemedText>
+            <View style={styles.videoWrapper}>
+              <Video
+                key={params.articleId ?? 'article-video'}
+                style={styles.video}
+                source={videoSource}
+                resizeMode={ResizeMode.CONTAIN}
+                useNativeControls
+                shouldPlay={false}
+              />
+            </View>
+            <ThemedText style={styles.videoMeta}>
+              {isStreaming ? 'Streaming from source link.' : 'Playing from local file path.'}
+            </ThemedText>
+          </View>
+        )}
       </ScrollView>
-      {canOpenOriginal && (
-        <Pressable
-          style={[styles.readMoreButton, { backgroundColor: palette.tint }]}
-          onPress={handleReadMore}
-        >
-          <ThemedText style={styles.readMoreLabel} lightColor="#ffffff" darkColor="#020617">
-            Read More
-          </ThemedText>
-        </Pressable>
-      )}
     </ThemedView>
   );
 }
@@ -125,7 +127,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    paddingBottom: 120,
+    paddingBottom: 40,
   },
   imageWrapper: {
     width: '100%',
@@ -155,17 +157,28 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     opacity: 0.92,
   },
-  readMoreButton: {
-    position: 'absolute',
-    bottom: 32,
-    left: 20,
-    right: 20,
-    paddingVertical: 16,
-    borderRadius: 16,
-    alignItems: 'center',
+  videoSection: {
+    marginTop: 12,
+    paddingHorizontal: 20,
+    paddingBottom: 32,
+    gap: 12,
   },
-  readMoreLabel: {
-    fontSize: 16,
-    fontWeight: '600',
+  videoHeading: {
+    fontSize: 20,
+    lineHeight: 26,
+  },
+  videoWrapper: {
+    width: '100%',
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: '#000000',
+  },
+  video: {
+    width: '100%',
+    aspectRatio: 16 / 9,
+  },
+  videoMeta: {
+    fontSize: 14,
+    opacity: 0.75,
   },
 });

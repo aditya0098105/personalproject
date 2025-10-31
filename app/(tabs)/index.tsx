@@ -1,7 +1,6 @@
 import type { ComponentProps } from 'react';
 import { useCallback, useState } from 'react';
 import { Image } from 'expo-image';
-import * as WebBrowser from 'expo-web-browser';
 import { Alert, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -109,9 +108,12 @@ export default function HomeScreen() {
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterStatus, setNewsletterStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  const handleOpenDocumentary = useCallback(async (url: string) => {
-    await WebBrowser.openBrowserAsync(url);
-  }, []);
+  const handleOpenDocumentary = useCallback(
+    (slug: string) => {
+      router.push({ pathname: '/documentaries', params: { slug } });
+    },
+    [router],
+  );
 
   const handleSubmitNewsletter = useCallback(() => {
     const trimmed = newsletterEmail.trim();
@@ -244,7 +246,7 @@ export default function HomeScreen() {
         {documentarySpotlight.map((feature, index) => (
           <Pressable
             key={feature.slug}
-            onPress={() => handleOpenDocumentary(feature.url)}
+            onPress={() => handleOpenDocumentary(feature.slug)}
             style={[
               styles.documentaryCard,
               {
