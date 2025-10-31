@@ -3,7 +3,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Image } from 'expo-image';
 import * as WebBrowser from 'expo-web-browser';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
+import { Animated, Easing, Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
@@ -22,7 +22,27 @@ export default function DocumentaryLibraryScreen() {
   const cardAnimations = useRef(documentaryLibrary.map(() => new Animated.Value(0))).current;
 
   const handleOpenLink = useCallback(async (url: string) => {
-    await WebBrowser.openBrowserAsync(url);
+    try {
+      const supportingBrowsers = await WebBrowser.getCustomTabsSupportingBrowsersAsync();
+      const browserPackage =
+        supportingBrowsers?.preferredBrowserPackage ??
+        supportingBrowsers?.defaultBrowserPackage ??
+        supportingBrowsers?.browserPackages?.[0];
+
+      if (browserPackage) {
+        await WebBrowser.openBrowserAsync(url, { browserPackage });
+      } else {
+        await WebBrowser.openBrowserAsync(url);
+      }
+    } catch (error) {
+      const canOpenLink = await Linking.canOpenURL(url);
+
+      if (canOpenLink) {
+        await Linking.openURL(url);
+      } else {
+        console.warn(`Unable to open URL: ${url}`, error);
+      }
+    }
   }, []);
 
   useFocusEffect(
